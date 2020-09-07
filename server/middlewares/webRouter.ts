@@ -7,16 +7,16 @@ import {
 const router = new Router();
 
 router.get("/", async (context) => {
-  await send(context, `old-web/index.html`);
+  await send(context, `web/dist/index.html`);
 });
 
 const staticMiddleware: Middleware = async (context, next) => {
-  if (context.request.url.pathname.startsWith("/static") === false) {
+  if (context.request.url.pathname.startsWith("/_assets") === false) {
     await next();
     return;
   } else {
     await context.send({
-      root: `old-web`,
+      root: `web/dist`,
     });
   }
 };
@@ -24,11 +24,7 @@ const staticMiddleware: Middleware = async (context, next) => {
 // A basic 404 page
 const notFound: Middleware = async (context) => {
   context.response.status = Status.NotFound;
-  await send(context, `old-web/404.html`);
+  await send(context, `web/dist/index.html`);
 };
 
-export {
-  router,
-  staticMiddleware,
-  notFound,
-};
+export { router, staticMiddleware, notFound };

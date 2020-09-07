@@ -1,8 +1,109 @@
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+/* -------------------------------------
+    CSS VARIABLES
+------------------------------------- */
+html {
+  --background: #f6f6f6;
+  --content-background: #fff;
+  --text: #333;
+  --important-text: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    --background: #1a1a1a;
+    --content-background: #262626;
+    --text: #fafafa;
+    --important-text: #fff;
+  }
+}
+
+/* -------------------------------------
+    BASIC STYLING
+------------------------------------- */
+body {
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background-color: var(--background);
+  padding: 1em;
+}
+
+@media (min-width: 400px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+/* -------------------------------------
+    TYPOGRAPHY
+------------------------------------- */
+h1,
+h2,
+h3,
+h4 {
+  color: var(--important-text);
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0;
+  margin-bottom: 1em;
+}
+
+h1 {
+  font-size: 2.15rem;
+  font-weight: 300;
+}
+
+p,
+ul,
+ol {
+  font-weight: normal;
+  margin: 0;
+  margin-bottom: 1em;
+  padding: 0;
+  list-style-type: none;
+}
+p li,
+ul li,
+ol li {
+  list-style-position: inside;
+}
+
+a {
+  color: #3498db;
+  text-decoration: underline;
+}
+
+/* -------------------------------------
+    BUTTON
+------------------------------------- */
+
+.button {
+  display: inline-block;
+  padding: 0.35em 1.2em;
+  border: 0.1em solid var(--important-text);
+  margin: 0 0.3em 0.3em 0;
+  border-radius: 0.12em;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-weight: 300;
+  color: var(--important-text);
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  transition: all 0.2s;
+}
+.button:hover {
+  color: var(--content-background);
+  background-color: var(--important-text);
+}
+@media all and (max-width: 30em) {
+  .button {
+    display: block;
+    margin: 0.4em auto;
+  }
 }
