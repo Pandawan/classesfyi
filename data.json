@@ -1,0 +1,48 @@
+{
+  "registration": {
+    "DA": {
+      "MATH": {
+        "22": {
+          "25313": {
+            "registered": [
+              "migueltenant@gmail.com"
+            ],
+            "previous": {
+              "wait_seats": 0,
+              "seats": 0,
+              "status": "Full"
+            }
+          }
+        },
+        "1A": {
+          "25995": {
+            "registered": [
+              "migueltenant@gmail.com"
+            ],
+            "previous": {
+              "wait_seats": 0,
+              "seats": 0,
+              "status": "Full"
+            }
+          }
+        }
+      }
+    }
+  },
+  "users": {
+    "migueltenant@gmail.com": [
+      {
+        "CRN": "25995",
+        "department": "MATH",
+        "course": "1A",
+        "campus": "DA"
+      },
+      {
+        "CRN": "25313",
+        "department": "MATH",
+        "course": "22",
+        "campus": "DA"
+      }
+    ]
+  }
+}
