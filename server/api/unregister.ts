@@ -3,8 +3,8 @@ import {
   RegistrationResponse,
   StoredClassData,
   ClassInfo,
-} from "../data.ts";
-import { db } from "../utilities/realdb.ts";
+} from "./data.ts";
+import { db } from "./utilities/realdb.ts";
 
 /**
  * Unregister the given email from the given classes.

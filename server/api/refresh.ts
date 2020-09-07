@@ -8,11 +8,11 @@ import {
   StoredClassData,
   Campus,
   isValidCampus,
-} from "../data.ts";
-import { db } from "../utilities/realdb.ts";
-import { groupBy } from "../utilities/groupBy.ts";
+} from "./data.ts";
+import { db } from "./utilities/realdb.ts";
+import { groupBy } from "./utilities/groupBy.ts";
 
-import { formatAndSendEmail } from "../utilities/email.ts";
+import { formatAndSendEmail } from "./utilities/email.ts";
 /**
  * Get a list of all classes that have been registered to.
  * @returns {ClassInformation[]} Array of all classes

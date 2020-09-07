@@ -1,8 +1,8 @@
 import {
   Router,
 } from "https://deno.land/x/oak@v6.1.0/mod.ts";
-import { register, unregister, unregisterAll, refresh } from "../lib.ts";
-import { validateRegistrationData } from "../data.ts";
+import { register, unregister, unregisterAll, refresh } from "../api/lib.ts";
+import { validateRegistrationData } from "../api/data.ts";
 
 /*
     Want Http server
@@ -99,4 +99,4 @@ router.post("/refresh", async (context) => {
   context.response.body = response;
 });
 
-export default router;
+export { router };

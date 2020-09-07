@@ -4,8 +4,8 @@ import {
   StoredFullData,
   StoredClassData,
   ClassInfo,
-} from "../data.ts";
-import { db } from "../utilities/realdb.ts";
+} from "./data.ts";
+import { db } from "./utilities/realdb.ts";
 
 /**
  * Register the given email for updates from the given classes.
