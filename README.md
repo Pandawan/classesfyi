@@ -1,4 +1,11 @@
 # Classes.fyi
+
+## Website
+
+### Index `/`
+
+Should have a main description of what it can really do access to register, unregister, unregister_all.
+
 ## Email Sending
 
 ### SendGrid

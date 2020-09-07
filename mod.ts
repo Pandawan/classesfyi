@@ -7,6 +7,8 @@ import {
 import {
   green,
 } from "https://deno.land/std@0.68.0/fmt/colors.ts";
+import webRouter from "./server/webRouter.ts";
+import apiRouter from "./server/apiRouter.ts";
 import logger from "./server/logger.ts";
 // Prepare app
 const app = new Application();
@@ -37,8 +39,28 @@ app.use(logger.logger);
 app.use(logger.responseTime);
 
 // Add router middleware
+app.use(webRouter.routes());
+app.use(webRouter.allowedMethods());
 app.use(apiRouter.routes());
 app.use(apiRouter.allowedMethods());
+
+// Handle static content
+app.use(async (context, next) => {
+  if (context.request.url.pathname.startsWith("/static") === false) {
+    await next();
+    return;
+  } else {
+    await context.send({
+      root: `${Deno.cwd()}/web`,
+    });
+  }
+});
+
+// A basic 404 page
+app.use(async (context) => {
+  context.response.status = Status.NotFound;
+  await send(context, "/web/404.html");
+});
 
 // Start server
 app.addEventListener("listen", ({ secure, hostname, port }) => {
