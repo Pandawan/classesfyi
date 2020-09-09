@@ -18,11 +18,11 @@
   </header>
 </template>
 
-<script>
-import { computed } from "vue";
+<script lang="ts">
+import { computed, defineComponent } from "vue";
 import { useRouter } from "vue-router";
 
-export default {
+export default defineComponent({
   setup() {
     const routes = [
       { to: "/", text: "Home" },
@@ -33,7 +33,7 @@ export default {
     const isActive = (path) => path === activeRoute.value;
     return { isActive, routes };
   },
-};
+});
 </script>
 
 <style scoped>

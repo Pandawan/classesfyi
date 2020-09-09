@@ -11,8 +11,9 @@
     <div>
       <h2>Want to get started?</h2>
       <p>Choose a campus</p>
-      <router-link class="button" to="/lookup/fh">Foothill</router-link>
-      <router-link class="button" to="/lookup/da">De Anza</router-link>
+      <select v-model="campusSelect">
+        <option v-for="(name, id) in availableCampuses" v-bind:value="id">{{ name }}</option>
+      </select>
     </div>
     <div>
       <h2>Tired of updates?</h2>
@@ -24,9 +25,29 @@
 </template>
 
 <script lang="ts">
-export default {
+import { defineComponent, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { availableCampuses, CampusId } from "../utilities/openCourseApi";
+
+export default defineComponent({
   name: "Home",
-};
+  setup() {
+    const campusSelect = ref<CampusId | null>(null);
+
+    const router = useRouter();
+
+    const navigateToCampusLookup = () => {
+      router.push(`/lookup/${campusSelect.value}`);
+    };
+
+    watch(campusSelect, navigateToCampusLookup);
+
+    return {
+      availableCampuses,
+      campusSelect,
+    };
+  },
+});
 </script>
 
 <style scoped>

@@ -116,7 +116,7 @@ async function getClassDataBatch(
     > {
       // Make the request
       const res = await fetch(
-        `https://opencourse.dev/${campusId.toLowerCase()}/batch`,
+        `https://opencourse.dev:3000/${campusId.toLowerCase()}/batch`,
         {
           method: "POST",
           body: JSON.stringify({

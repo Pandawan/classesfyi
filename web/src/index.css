@@ -81,9 +81,11 @@ a {
 }
 
 /* -------------------------------------
-    BUTTON
+    INPUT & BUTTON
 ------------------------------------- */
 
+input,
+select,
 .button {
   display: inline-block;
   padding: 0.35em 1.2em;
@@ -102,8 +104,11 @@ a {
   background-color: var(--important-text);
 }
 @media all and (max-width: 30em) {
+  input,
+  select,
   .button {
     display: block;
     margin: 0.4em auto;
+    width: 100%;
   }
 }
