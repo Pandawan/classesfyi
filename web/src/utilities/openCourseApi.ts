@@ -16,10 +16,10 @@ export class APIError extends Error {
 ------------------------------------- */
 
 export const availableCampuses = {
-  "fh": "Foothill College",
-  "da": "De Anza College",
-  "wv": "West Valley College",
-  "mc": "Mission College",
+  fh: "Foothill College",
+  da: "De Anza College",
+  // wv: "West Valley College",
+  // mc: "Mission College",
 };
 
 export type CampusId = keyof typeof availableCampuses;
@@ -42,16 +42,13 @@ export interface DepartmentInfo {
  */
 
 export async function getCampusDepartments(
-  campusId: CampusId,
+  campusId: CampusId
 ): Promise<[APIError, null] | [null, Array<DepartmentInfo>]> {
   const res = await fetch(`https://opencourse.dev/${campusId}/depts`);
 
   if (res.status === 200) {
     const data = await res.json();
-    return [
-      null,
-      data,
-    ];
+    return [null, data];
   } else {
     const error = (await res.json()).error;
     return [new APIError(res.status, error), null];
@@ -63,18 +60,15 @@ export async function getCampusDepartments(
  */
 export async function getDepartmentInfo(
   campusId: CampusId,
-  departmentId: string,
+  departmentId: string
 ): Promise<[APIError, null] | [null, DepartmentInfo]> {
   const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}`,
+    `https://opencourse.dev/${campusId}/depts/${departmentId}`
   );
 
   if (res.status === 200) {
     const data = await res.json();
-    return [
-      null,
-      data,
-    ];
+    return [null, data];
   } else {
     const error = (await res.json()).error;
     return [new APIError(res.status, error), null];
@@ -86,7 +80,8 @@ export async function getDepartmentInfo(
 ------------------------------------- */
 
 export interface CourseInfo {
-  dept: string;
+  campus: string;
+  department: string;
   course: string;
   title: string;
   classes: string[];
@@ -98,17 +93,21 @@ export interface CourseInfo {
 
 export async function getDepartmentCourses(
   campusId: CampusId,
-  departmentId: string,
+  departmentId: string
 ): Promise<[APIError, null] | [null, CourseInfo[]]> {
   const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses`,
+    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses`
   );
 
   if (res.status === 200) {
     const data = await res.json();
     return [
       null,
-      data,
+      data.map((courseInfo: any) => ({
+        ...courseInfo,
+        department: courseInfo.dept,
+        campus: campusId.toUpperCase(),
+      })),
     ];
   } else {
     const error = (await res.json()).error;
@@ -122,18 +121,15 @@ export async function getDepartmentCourses(
 export async function getCourseInfo(
   campusId: CampusId,
   departmentId: string,
-  courseId: string,
+  courseId: string
 ): Promise<[APIError, null] | [null, CourseInfo]> {
   const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}`,
+    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}`
   );
 
   if (res.status === 200) {
     const data = await res.json();
-    return [
-      null,
-      data,
-    ];
+    return [null, data];
   } else {
     const error = (await res.json()).error;
     return [new APIError(res.status, error), null];
@@ -151,8 +147,10 @@ export interface ClassInfo {
   CRN: number;
   /** Full identifier for the class */
   raw_course: string;
+  /** Campus */
+  campus: string;
   /** Department */
-  dept: string;
+  department: string;
   /** Course */
   course: string;
   /** Section */
@@ -192,17 +190,21 @@ export interface ClassInfo {
 export async function getCourseClasses(
   campusId: CampusId,
   departmentId: string,
-  courseId: string,
+  courseId: string
 ): Promise<[APIError, null] | [null, ClassInfo[]]> {
   const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}/classes`,
+    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}/classes`
   );
 
   if (res.status === 200) {
     const data = await res.json();
     return [
       null,
-      data,
+      data.map((classInfo: any) => ({
+        ...classInfo,
+        department: classInfo.dept,
+        campus: campusId.toUpperCase(),
+      })),
     ];
   } else {
     const error = (await res.json()).error;

@@ -2,6 +2,7 @@
   <div v-if="campusId !== null && departments !== null && error === null">
     <h2>{{ campusName }} Departments</h2>
     <SearchableList
+      placeholder="Search for a department..."
       :items="departments"
       v-slot="{ item: department }"
       :filter="(item, query) =>
@@ -74,7 +75,7 @@ export default defineComponent({
 <style scoped>
 .department {
   margin: 0 0.5em;
-  padding: 0.5em 0;
+  padding: 0.25em 0;
   font-size: 1.15em;
 }
 </style>

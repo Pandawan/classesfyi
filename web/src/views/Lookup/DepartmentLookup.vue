@@ -2,14 +2,17 @@
   <div v-if="campusId !== null && departmentId !== null && courses !== null && error === null">
     <h2>{{ campusId.toUpperCase() }} {{ departmentName }} Courses</h2>
     <SearchableList
+      placeholder="Search for a course..."
       :items="courses"
       v-slot="{ item: course }"
-      :filter="(item, query) =>
-    item.course.toLowerCase().indexOf(query.toLowerCase()) != -1 || item.title.toLowerCase().indexOf(query.toLowerCase()) != -1"
+      :filter="(item, query) => {
+        // Compute a queryString with possible combinations/ways for people to search to match as many as possible
+        return `${item.dept} ${item.course} ${item.dept}${item.course} ${item.title}`.toLowerCase().indexOf(query.toLowerCase()) !== -1
+      }"
     >
       <router-link :to="`/lookup/${campusId}/${departmentId}/${course.course}`">
         <div class="course">
-          <span class="id">{{ departmentId }}{{course.course}}</span>
+          <span class="id">{{ departmentId }} {{course.course}}</span>
           -
           <span class="name">{{ course.title }}</span>
         </div>
@@ -97,9 +100,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.department {
+.course {
   margin: 0 0.5em;
-  padding: 0.5em 0;
+  padding: 0.25em 0;
   font-size: 1.15em;
 }
 </style>

@@ -4,13 +4,16 @@
   >
     <h2>{{ campusId.toUpperCase() }} {{ departmentId }}{{ courseInfo.course }} {{ courseInfo.title }} Classes</h2>
     <SearchableList
+      placeholder="Search by CRN or instructor..."
       :items="classes"
       v-slot="{ item: classInfo }"
-      :filter="(item, query) =>
-    item.course.toLowerCase().indexOf(query.toLowerCase()) != -1 || item.title.toLowerCase().indexOf(query.toLowerCase()) != -1"
+      :filter="(item, query) => {
+        // Search by CRN or instructor name
+        return item.CRN.toString().toLowerCase().indexOf(query.toLowerCase()) != -1 || item.times.some((classSchedule) => classSchedule.instructor.some((instructor) => instructor.toLowerCase().indexOf(query.toLowerCase()) != -1))
+    }"
     >
       <div class="class">
-        <pre><code>{{ JSON.stringify(classInfo, null, '\t') }}</code></pre>
+        <ClassView :classData="classInfo" />
       </div>
     </SearchableList>
   </div>
@@ -23,6 +26,7 @@
 import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import SearchableList from "../../components/SearchableList.vue";
+import ClassView from "../../components/ClassView.vue";
 import {
   APIError,
   availableCampuses,
@@ -40,6 +44,7 @@ export default defineComponent({
   name: "Lookup",
   components: {
     SearchableList,
+    ClassView,
   },
   setup(props) {
     const route = useRoute();
@@ -102,9 +107,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.department {
-  margin: 0 0.5em;
-  padding: 0.5em 0;
-  font-size: 1.15em;
+.class {
+  margin: 2em 0;
 }
 </style>

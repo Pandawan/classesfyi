@@ -1,5 +1,5 @@
 <template>
-  <input class="search-input" v-model="searchQuery" />
+  <input class="search-input" v-model="searchQuery" :placeholder="placeholder" />
   <div class="list">
     <div class="list-item" v-for="item in filteredItems">
       <slot :item="item">Missing template</slot>
@@ -13,6 +13,11 @@ import { computed, defineComponent, PropType, ref } from "vue";
 export default defineComponent({
   name: "SearchableList",
   props: {
+    placeholder: {
+      type: String,
+      required: false,
+      default: "Search...",
+    },
     items: {
       type: Array,
       required: true,
