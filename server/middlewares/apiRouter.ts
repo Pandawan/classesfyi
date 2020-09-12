@@ -1,8 +1,9 @@
-import {
-  Router,
-} from "https://deno.land/x/oak@v6.1.0/mod.ts";
+import { Router } from "https://deno.land/x/oak@v6.1.0/mod.ts";
 import { register, unregister, unregisterAll, refresh } from "../api/lib.ts";
-import { validateRegistrationData } from "../api/data.ts";
+import {
+  sanitizeRegistrationData,
+  validateRegistrationData,
+} from "../api/data.ts";
 
 /*
     Want Http server
@@ -12,7 +13,9 @@ import { validateRegistrationData } from "../api/data.ts";
         /refresh POST
 */
 
-const router = new Router();
+const router = new Router({
+  prefix: "/api",
+});
 
 router.post("/register", async (context) => {
   if (context.request.hasBody === false) {
@@ -35,8 +38,9 @@ router.post("/register", async (context) => {
     context.response.status = 400;
     return;
   }
+  const sanitizedBody = sanitizeRegistrationData(body);
 
-  const response = register(body);
+  const response = register(sanitizedBody);
 
   context.response.body = response;
 });
@@ -62,8 +66,9 @@ router.post("/unregister", async (context) => {
     context.response.status = 400;
     return;
   }
+  const sanitizedBody = sanitizeRegistrationData(body);
 
-  const response = unregister(body);
+  const response = unregister(sanitizedBody);
 
   context.response.body = response;
 });

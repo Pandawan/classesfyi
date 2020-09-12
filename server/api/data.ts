@@ -32,6 +32,14 @@ export function validateClassInfo(data: any): vs.ValueSchemaError[] {
   });
   return messages;
 }
+export function sanitizeClassInfo(data: ClassInfo): ClassInfo {
+  return {
+    campus: data.campus,
+    department: data.department,
+    course: data.course,
+    CRN: data.CRN.toString(),
+  };
+}
 
 const registrationDataSchema = {
   email: vs.email(),
@@ -51,6 +59,14 @@ export function validateRegistrationData(data: any): vs.ValueSchemaError[] {
     messages.push(err);
   });
   return messages;
+}
+export function sanitizeRegistrationData(
+  data: RegistrationData
+): RegistrationData {
+  return {
+    email: data.email,
+    classes: data.classes.map((classInfo) => sanitizeClassInfo(classInfo)),
+  };
 }
 
 export interface RegistrationResponse<ResponseTypes extends string> {
@@ -95,19 +111,21 @@ export interface StoredClassData {
  */
 export interface UpdatedClassData extends ClassInfo {
   changes: Array<
-    {
-      type: "wait_seats";
-      previous: number;
-      new: number;
-    } | {
-      type: "seats";
-      previous: number;
-      new: number;
-    } | {
-      type: "status";
-      previous: Status;
-      new: Status;
-    }
+    | {
+        type: "wait_seats";
+        previous: number;
+        new: number;
+      }
+    | {
+        type: "seats";
+        previous: number;
+        new: number;
+      }
+    | {
+        type: "status";
+        previous: Status;
+        new: Status;
+      }
   >;
 }
 

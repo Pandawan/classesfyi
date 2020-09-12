@@ -7,24 +7,32 @@ import { groupBy } from "./groupBy.ts";
 
 const { SENDGRID_API_KEY } = config();
 
-type EmailData = Record<Campus, {
-  changes: string[];
-  campus: Campus;
-  department: string;
-  course: string;
-  CRN: string;
-}[]>;
+type EmailData = Record<
+  Campus,
+  {
+    changes: string[];
+    campus: Campus;
+    department: string;
+    course: string;
+    CRN: string;
+  }[]
+>;
 
-export async function formatAndSendEmail(
-  data: { [email: string]: UpdatedClassData[] },
-): Promise<
-  Array<{ type: "emailed"; email: string } | { type: "error"; error: string }>
+export async function formatAndSendEmail(data: {
+  [email: string]: UpdatedClassData[];
+}): Promise<
+  Array<
+    | { type: "emailed"; email: string }
+    | { type: "error"; email: string; error: string }
+  >
 > {
-  const emailPerCampusData: Array<[string, EmailData]> = Object.entries(data)
-    .map(([email, classesData]) => {
-      const formattedClassData = classesData.map((classData) => ({
-        ...classData,
-        changes: classData.changes.map((change) => {
+  const emailPerCampusData: Array<[string, EmailData]> = Object.entries(
+    data
+  ).map(([email, classesData]) => {
+    const formattedClassData = classesData.map((classData) => ({
+      ...classData,
+      changes: classData.changes
+        .map((change) => {
           if (change.type === "seats") {
             if (change.new === 1) {
               return `There is 1 seat available (was ${change.previous})`;
@@ -40,19 +48,15 @@ export async function formatAndSendEmail(
               return `There are ${change.new} waitlist seats available (was ${change.previous})`;
             }
           }
-        }).filter((formattedChange) =>
-          formattedChange !== undefined
-        ) as string[],
-      }));
+        })
+        .filter((formattedChange) => formattedChange !== undefined) as string[],
+    }));
 
-      return [
-        email,
-        groupBy(
-          formattedClassData,
-          (classInfo) => classInfo.campus,
-        ),
-      ];
-    });
+    return [
+      email,
+      groupBy(formattedClassData, (classInfo) => classInfo.campus),
+    ];
+  });
 
   const tasks = emailPerCampusData.map(async ([email, emailData]) => {
     try {
@@ -81,37 +85,38 @@ export async function formatAndSendEmail(
   });
 }
 
-async function renderEmail(
-  email: string,
-  emailData: EmailData,
-) {
-  return await renderFileToString(`${Deno.cwd()}/email.inline.ejs`, {
-    it: {
-      email,
-      data: emailData,
-      campusNames: {
-        "FH": "Foothill",
-        "DA": "De Anza",
-      } as Record<Campus, string>,
-    },
-  });
+async function renderEmail(email: string, emailData: EmailData) {
+  return await renderFileToString(
+    `${Deno.cwd()}/server/templates/email.inline.ejs`,
+    {
+      it: {
+        email,
+        data: emailData,
+        campusNames: {
+          FH: "Foothill",
+          DA: "De Anza",
+        } as Record<Campus, string>,
+      },
+    }
+  );
 }
 
 async function sendEmail(email: string, emailContent: string) {
-  const result = await sendSimpleMail({
-    subject: "Classes.fyi: Updates about your classes",
-    to: [{ email }],
-    from: { email: "help@classes.fyi" },
-    content: [
-      { type: "text/html", value: emailContent },
-    ],
-  }, {
-    apiKey: SENDGRID_API_KEY,
-  });
+  const result = await sendSimpleMail(
+    {
+      subject: "Classes.fyi: Updates about your classes",
+      to: [{ email }],
+      from: { email: "help@classes.fyi" },
+      content: [{ type: "text/html", value: emailContent }],
+    },
+    {
+      apiKey: SENDGRID_API_KEY,
+    }
+  );
 
   if (result.success === false && result.errors !== undefined) {
     throw new Error(
-      `Could not send email to ${email}: ${result.errors.join(", ")}`,
+      `Could not send email to ${email}: ${result.errors.join(", ")}`
     );
   }
 }

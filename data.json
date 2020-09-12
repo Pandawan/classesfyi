@@ -4,21 +4,12 @@
       "MATH": {
         "22": {
           "25313": {
-            "registered": [
-              "migueltenant@gmail.com"
-            ],
-            "previous": {
-              "wait_seats": 0,
-              "seats": 0,
-              "status": "Full"
-            }
+            "registered": ["migueltenant@gmail.com"]
           }
         },
         "1A": {
           "25995": {
-            "registered": [
-              "migueltenant@gmail.com"
-            ],
+            "registered": ["migueltenant@gmail.com"],
             "previous": {
               "wait_seats": 0,
               "seats": 0,
@@ -38,10 +29,10 @@
         "campus": "DA"
       },
       {
-        "CRN": "25313",
+        "campus": "DA",
         "department": "MATH",
         "course": "22",
-        "campus": "DA"
+        "CRN": "25313"
       }
     ]
   }
