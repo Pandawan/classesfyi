@@ -28,17 +28,16 @@ import { useRoute } from "vue-router";
 import SearchableList from "../../components/SearchableList.vue";
 import ClassView from "../../components/ClassView.vue";
 import {
-  APIError,
-  availableCampuses,
   getCampusDepartments,
   getDepartmentCourses,
   getDepartmentInfo,
-  isAvailableCampus,
   CourseInfo,
   getCourseInfo,
   getCourseClasses,
   ClassInfo,
 } from "../../utilities/openCourseApi";
+import { APIError } from "../../utilities/APIError";
+import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
 
 export default defineComponent({
   name: "Lookup",

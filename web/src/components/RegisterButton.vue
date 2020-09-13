@@ -9,7 +9,7 @@
       <form v-on:submit.prevent class="active">
         <input
           v-model="input"
-          v-on:change="error = undefined"
+          v-on:change="error = null"
           :class="`active-input ${error ? 'error-input' : ''}`"
           type="email"
           placeholder="Enter your email..."
@@ -26,6 +26,7 @@
 import { emailStore } from "../stores/email";
 import { defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "../utilities/openCourseApi";
+import { registerForClass } from "../utilities/classesFyiApi";
 
 export default defineComponent({
   name: "RegisterButton",
@@ -37,7 +38,7 @@ export default defineComponent({
   },
   setup(props) {
     const state = ref<"initial" | "active" | "success">("initial");
-    const input = ref<string>("");
+    const input = ref<string>(emailStore.state.email ?? "");
     const error = ref<string | null>(null);
 
     const register = async () => {
@@ -48,27 +49,19 @@ export default defineComponent({
       }
       emailStore.setEmail(input.value);
 
-      try {
-        // TODO: Verify request
-        const res = await fetch("/api/register", {
-          method: "POST",
-          body: JSON.stringify({
-            classes: [props.classInfo],
-            email: input.value,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+      const [apiError, result] = await registerForClass(
+        input.value,
+        props.classInfo
+      );
 
-        if (res.ok) {
+      if (result !== null) {
+        if (result[0].type === "registered") {
           state.value = "success";
-        } else {
-          error.value = res.statusText;
+        } else if (result[0].type === "duplicated") {
+          error.value = "You are already registered for this class.";
         }
-      } catch (e) {
-        error.value = `Something went wrong, please try again.`;
-        console.error(e);
+      } else {
+        error.value = `Something went wrong, please try again. ${apiError.toString()}`;
       }
     };
 

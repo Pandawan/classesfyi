@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 
 export const emailStore = {
-  debug: true,
+  debug: false,
 
   state: reactive({
     email: "",

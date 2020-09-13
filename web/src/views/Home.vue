@@ -10,16 +10,15 @@
   <section class="split-content">
     <div>
       <h2>Want to get started?</h2>
-      <p>Choose a campus</p>
+      <p>Choose a campus and look for classes</p>
       <select v-model="campusSelect">
         <option v-for="(name, id) in availableCampuses" v-bind:value="id">{{ name }}</option>
       </select>
     </div>
     <div>
-      <h2>Tired of updates?</h2>
-      <p>Unregister</p>
-      <router-link class="button" to="/unregister">From a Class</router-link>
-      <router-link class="button" to="/unregister_all">From All Updates</router-link>
+      <h2>User information</h2>
+      <p>Looking to see and modify your class updates?</p>
+      <router-link class="button" to="/user">See Current Class Registration</router-link>
     </div>
   </section>
 </template>
@@ -27,7 +26,7 @@
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { availableCampuses, CampusId } from "../utilities/openCourseApi";
+import { availableCampuses, CampusId } from "../utilities/campus";
 
 export default defineComponent({
   name: "Home",

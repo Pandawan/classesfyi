@@ -1,32 +1,5 @@
-/* -------------------------------------
-    UTILITIES
-------------------------------------- */
-
-export class APIError extends Error {
-  public code: number;
-
-  constructor(code: number, message: string) {
-    super(message);
-    this.code = code;
-  }
-}
-
-/* -------------------------------------
-    CAMPUS
-------------------------------------- */
-
-export const availableCampuses = {
-  fh: "Foothill College",
-  da: "De Anza College",
-  // wv: "West Valley College",
-  // mc: "Mission College",
-};
-
-export type CampusId = keyof typeof availableCampuses;
-
-export function isAvailableCampus(value: string): value is CampusId {
-  return availableCampuses[value] !== undefined;
-}
+import { APIError } from "./APIError";
+import { CampusId } from "./campus";
 
 /* -------------------------------------
     DEPARTMENT
@@ -80,7 +53,7 @@ export async function getDepartmentInfo(
 ------------------------------------- */
 
 export interface CourseInfo {
-  campus: string;
+  campus: CampusId;
   department: string;
   course: string;
   title: string;
@@ -148,7 +121,7 @@ export interface ClassInfo {
   /** Full identifier for the class */
   raw_course: string;
   /** Campus */
-  campus: string;
+  campus: CampusId;
   /** Department */
   department: string;
   /** Course */

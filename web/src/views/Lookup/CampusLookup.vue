@@ -27,12 +27,11 @@ import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import SearchableList from "../../components/SearchableList.vue";
 import {
-  APIError,
-  availableCampuses,
   getCampusDepartments,
-  isAvailableCampus,
   DepartmentInfo,
 } from "../../utilities/openCourseApi";
+import { APIError } from "../../utilities/APIError";
+import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
 
 export default defineComponent({
   name: "Lookup",
