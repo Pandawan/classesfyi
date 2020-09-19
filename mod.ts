@@ -13,8 +13,9 @@ import { router as apiRouter } from "./server/middlewares/apiRouter.ts";
 import { logger, responseTime } from "./server/middlewares/logger.ts";
 import { updateTask } from "./server/tasks/updateTask.ts";
 import { config } from "https://deno.land/x/dotenv@v0.5.0/mod.ts";
+import { strToBool } from "./server/utilities/strToBool.ts";
 
-const PORT = config().PORT ? parseInt(config().PORT) : 3000;
+const DEV_MODE = strToBool(config().DEV_MODE, true);
 
 // Start the updates/refresh task
 const cancelUpdates = updateTask();
@@ -58,7 +59,6 @@ app.use(webRouter.allowedMethods());
 // Handle static content
 app.use(staticMiddleware);
 app.use(async (context) => {
-  console.log("Any path");
   await send(context, `web/dist/index.html`);
 });
 // app.use(notFound);
@@ -69,7 +69,16 @@ app.addEventListener("listen", ({ secure, hostname, port }) => {
   const url = `${protocol}${hostname ?? "localhost"}:${port}`;
   console.log(`Listening on: ${green(url)}`);
 });
-await app.listen({ port: PORT });
+await app.listen({
+  port: DEV_MODE ? 3000 : 80,
+  ...(DEV_MODE
+    ? {}
+    : {
+        secure: true,
+        certFile: "./admin/classes.fyi.pem",
+        keyFile: "./admin/classes.fyi.key",
+      }),
+});
 
 // Stop the updates interval, the program is done
 cancelUpdates();
