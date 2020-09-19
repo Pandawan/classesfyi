@@ -8,7 +8,9 @@ export const updateTask = () => {
   const task = setInterval(async () => {
     try {
       console.log(
-        `Refreshing class status (every ${intervalDuration / 60e3} mins)`
+        `${new Date().toISOString()} Refreshing class status (every ${
+          intervalDuration / 60e3
+        } mins)`
       );
       // Send refresh request
       const { emails, campus_errors } = await refresh();

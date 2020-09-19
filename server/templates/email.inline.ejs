@@ -357,6 +357,9 @@
                           There are updates about some of the classes you have
                           registered for:
                         </p>
+                        <p style="font-family: sans-serif;font-size: 14px;font-weight: normal;margin: 0;margin-bottom: 15px;padding: 0;list-style-type: none;">
+                          Please note that you are not actually signed up for these classes, you are simply getting updates about their availability.
+                        </p>
                         <% for(let [campus, classes] of Object.entries(it.data)) { %>
                         <h3 style="color: #000000;font-family: sans-serif;font-weight: 400;line-height: 1.4;margin: 0;margin-bottom: 30px;"><%= it.campusNames[campus] %></h3>
                         <table style="border-collapse: separate;mso-table-lspace: 0pt;mso-table-rspace: 0pt;width: 100%;">
@@ -403,7 +406,7 @@
                     <br>
                     Don't like these emails?
                     <!-- TODO: Unsubscribe | Unsubscribe all -->
-                    <a href="http://i.imgur.com/CScmqnj.gif" style="color: #999999;text-decoration: underline;font-size: 12px;text-align: center;">Unsubscribe</a>.
+                    <a href="<%= `http://classes.fyi/user/${it.email}` %>" style="color: #999999;text-decoration: underline;font-size: 12px;text-align: center;">Unsubscribe</a>.
                   </td>
                 </tr>
               </table>

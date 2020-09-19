@@ -52,9 +52,15 @@ export default defineComponent({
       if (isAvailableCampus(campusId.value)) {
         const [err, depts] = await getCampusDepartments(campusId.value);
 
-        if (err === null) departments.value = depts;
-        else error.value = err;
+        if (err === null) {
+          departments.value = depts;
+          error.value = null;
+        } else {
+          departments.value = null;
+          error.value = err;
+        }
       } else {
+        departments.value = null;
         error.value = new APIError(404, "No campus found with given id");
       }
     };

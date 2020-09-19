@@ -4,6 +4,7 @@
 html {
   --background: #f6f6f6;
   --content-background: #fff;
+  --side-text: #777;
   --text: #333;
   --important-text: #000;
 }
@@ -12,6 +13,7 @@ html {
   html {
     --background: #1a1a1a;
     --content-background: #262626;
+    --side-text: #ccc;
     --text: #fafafa;
     --important-text: #fff;
   }
@@ -88,12 +90,13 @@ input,
 select {
   display: inline-block;
   padding: 0.35em 0.5em;
-  border: 0.1em solid var(--important-text);
+  border: 0.1em solid var(--text);
+  background-color: var(--background);
   border-radius: 0.12em;
   box-sizing: border-box;
   text-decoration: none;
   font-weight: 300;
-  color: var(--important-text);
+  color: var(--text);
   transition: all 0.2s;
 }
 
@@ -106,10 +109,13 @@ select {
   text-decoration: none;
   font-weight: 300;
   color: var(--important-text);
+  background-color: var(--background);
   text-align: center;
   transition: all 0.2s;
 }
-.button:hover {
+.button:hover,
+.button:active,
+.button:focus {
   color: var(--content-background);
   background-color: var(--important-text);
 }
@@ -121,4 +127,8 @@ select {
     margin: 0.4em auto;
     width: 100%;
   }
+}
+
+.side-text {
+  color: var(--side-text);
 }

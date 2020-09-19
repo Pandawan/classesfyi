@@ -16,7 +16,7 @@
         />
         <button v-on:click="register" class="button active-button">Register</button>
       </form>
-      <div v-if="error" class="error-message">{{error}}</div>
+      <div v-if="error" class="error-message">{{error.toString()}}</div>
     </div>
     <div v-if="state === 'success'" class="success-message">Successfully registered for updates.</div>
   </div>
@@ -74,7 +74,7 @@ export default defineComponent({
 .active {
   display: flex;
 }
-.active-input {
+.active .active-input {
   border-right: none;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;

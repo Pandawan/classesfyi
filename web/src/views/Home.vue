@@ -6,6 +6,9 @@
       <li>Simply register for updates for the classes you want, and we'll email you when they open up.</li>
       <li>Get started now, no account required.</li>
     </ul>
+    <p
+      class="side-text"
+    >Please note that you are not actually signing up for these classes, you are simply getting updates about their availability.</p>
   </section>
   <section class="split-content">
     <div>
@@ -71,5 +74,9 @@ section {
   .split-content > *:not(:last-child) {
     margin-bottom: 1.5rem;
   }
+}
+
+.side-text {
+  font-size: 0.85rem;
 }
 </style>

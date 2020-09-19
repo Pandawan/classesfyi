@@ -1,15 +1,15 @@
 import vs from "https://deno.land/x/value_schema@v3.0.0-rc.14/mod.ts";
 
-export type Campus = "FH" | "DA";
+export type Campus = "fh" | "da";
 export type Status = "Open" | "Full" | "Waitlist";
 
 export function isValidCampus(str: string): str is Campus {
-  return str === "FH" || str === "DA";
+  return str === "fh" || str === "da";
 }
 
 const classInfoSchema = {
   campus: vs.string({
-    only: ["FH", "DA"],
+    only: ["fh", "da"],
   }),
   department: vs.string({
     pattern: /^[A-Z/]{2,4}$/,
@@ -61,7 +61,7 @@ export function validateRegistrationData(data: any): vs.ValueSchemaError[] {
   return messages;
 }
 export function sanitizeRegistrationData(
-  data: RegistrationData
+  data: RegistrationData,
 ): RegistrationData {
   return {
     email: data.email,
@@ -112,20 +112,20 @@ export interface StoredClassData {
 export interface UpdatedClassData extends ClassInfo {
   changes: Array<
     | {
-        type: "wait_seats";
-        previous: number;
-        new: number;
-      }
+      type: "wait_seats";
+      previous: number;
+      new: number;
+    }
     | {
-        type: "seats";
-        previous: number;
-        new: number;
-      }
+      type: "seats";
+      previous: number;
+      new: number;
+    }
     | {
-        type: "status";
-        previous: Status;
-        new: Status;
-      }
+      type: "status";
+      previous: Status;
+      new: Status;
+    }
   >;
 }
 
@@ -154,6 +154,7 @@ export interface UnformattedClassData {
 export function formatClassData(classDatas: UnformattedClassData[]): ClassData {
   let finalClassData: any = {
     ...classDatas[0],
+    campus: classDatas[0].campus.toLowerCase(),
     units: parseFloat(classDatas[0].units),
     seats: parseInt(classDatas[0].seats),
     wait_seats: parseInt(classDatas[0].wait_seats),

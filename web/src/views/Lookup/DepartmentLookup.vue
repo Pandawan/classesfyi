@@ -60,10 +60,16 @@ export default defineComponent({
           departmentId.value
         );
 
-        if (err === null) departmentName.value = dept.name;
-        else error.value = err;
+        if (err === null) {
+          departmentName.value = dept.name;
+          error.value = null;
+        } else {
+          error.value = err;
+          departmentName.value = null;
+        }
       } else {
         error.value = new APIError(404, "No campus found with given id");
+        departmentName.value = null;
       }
     };
 

@@ -14,9 +14,7 @@
       <div v-if="classData.seats !== 0">Available seats: {{classData.seats}}</div>
       <div v-else-if="classData.wait_seats !== 0">Available waitlist seats: {{classData.wait_seats}}</div>
       <div v-else>No open or waitlist seats available.</div>
-      <div v-if="classData.seats === 0 && classData.wait_seats === 0">
-        <RegisterButton :classInfo="classData" />
-      </div>
+      <slot :classData="classData"></slot>
     </div>
     <div>Duration: {{classData.start}} - {{classData.end}}</div>
     <div>Units: {{classData.units}}</div>

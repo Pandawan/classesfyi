@@ -27,7 +27,7 @@ export async function formatAndSendEmail(data: {
   >
 > {
   const emailPerCampusData: Array<[string, EmailData]> = Object.entries(
-    data
+    data,
   ).map(([email, classesData]) => {
     const formattedClassData = classesData.map((classData) => ({
       ...classData,
@@ -93,11 +93,11 @@ async function renderEmail(email: string, emailData: EmailData) {
         email,
         data: emailData,
         campusNames: {
-          FH: "Foothill",
-          DA: "De Anza",
+          fh: "Foothill",
+          da: "De Anza",
         } as Record<Campus, string>,
       },
-    }
+    },
   );
 }
 
@@ -111,12 +111,12 @@ async function sendEmail(email: string, emailContent: string) {
     },
     {
       apiKey: SENDGRID_API_KEY,
-    }
+    },
   );
 
   if (result.success === false && result.errors !== undefined) {
     throw new Error(
-      `Could not send email to ${email}: ${result.errors.join(", ")}`
+      `Could not send email to ${email}: ${result.errors.join(", ")}`,
     );
   }
 }

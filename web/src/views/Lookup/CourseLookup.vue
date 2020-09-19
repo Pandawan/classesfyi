@@ -13,7 +13,11 @@
     }"
     >
       <div class="class">
-        <ClassView :classData="classInfo" />
+        <ClassView :classData="classInfo">
+          <div v-if="classInfo.seats === 0 && classInfo.wait_seats === 0">
+            <RegisterButton :classInfo="classInfo" />
+          </div>
+        </ClassView>
       </div>
     </SearchableList>
   </div>
@@ -38,12 +42,14 @@ import {
 } from "../../utilities/openCourseApi";
 import { APIError } from "../../utilities/APIError";
 import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
+import RegisterButton from "../../components/RegisterButton.vue";
 
 export default defineComponent({
   name: "Lookup",
   components: {
     SearchableList,
     ClassView,
+    RegisterButton,
   },
   setup(props) {
     const route = useRoute();
@@ -83,9 +89,15 @@ export default defineComponent({
           courseId.value
         );
 
-        if (err === null) classes.value = crs;
-        else error.value = err;
+        if (err === null) {
+          classes.value = crs;
+          error.value = null;
+        } else {
+          classes.value = null;
+          error.value = err;
+        }
       } else {
+        classes.value = null;
         error.value = new APIError(404, "No campus found with given id");
       }
     };

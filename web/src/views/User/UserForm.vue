@@ -1,15 +1,15 @@
 <template>
-  <p>See which classes you're registered to</p>
-  <form @submit="submit">
+  <p>See and manage the classes you're registered to</p>
+  <form @submit="submit" class="active">
     <input
       v-model="input"
       v-on:change="error = null"
-      :class="error ? 'error-input' : ''"
+      :class="`active-input ${error ? 'error-input' : ''}`"
       type="email"
       placeholder="Enter your email..."
     />
+    <button class="button active-button">Check Registered Classes</button>
     <div v-if="error" class="error-message">{{error}}</div>
-    <button class="button">Check Registered Classes</button>
   </form>
 </template>
 
@@ -46,5 +46,15 @@ export default defineComponent({
 }
 .error-message {
   color: red;
+}
+.active-input {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  flex: 1;
+}
+.active-button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 </style>
