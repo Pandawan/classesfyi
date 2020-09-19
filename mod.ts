@@ -12,6 +12,9 @@ import {
 import { router as apiRouter } from "./server/middlewares/apiRouter.ts";
 import { logger, responseTime } from "./server/middlewares/logger.ts";
 import { updateTask } from "./server/tasks/updateTask.ts";
+import { config } from "https://deno.land/x/dotenv@v0.5.0/mod.ts";
+
+const PORT = config().PORT ? parseInt(config().PORT) : 3000;
 
 // Start the updates/refresh task
 const cancelUpdates = updateTask();
@@ -66,7 +69,7 @@ app.addEventListener("listen", ({ secure, hostname, port }) => {
   const url = `${protocol}${hostname ?? "localhost"}:${port}`;
   console.log(`Listening on: ${green(url)}`);
 });
-await app.listen({ port: 3000 });
+await app.listen({ port: PORT });
 
 // Stop the updates interval, the program is done
 cancelUpdates();
