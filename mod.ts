@@ -69,16 +69,18 @@ app.addEventListener("listen", ({ secure, hostname, port }) => {
   const url = `${protocol}${hostname ?? "localhost"}:${port}`;
   console.log(`Listening on: ${green(url)}`);
 });
-await app.listen({
-  port: DEV_MODE ? 3000 : 80,
-  ...(DEV_MODE
-    ? {}
+await app.listen(
+  DEV_MODE
+    ? {
+        port: 3000,
+      }
     : {
+        port: 443,
         secure: true,
         certFile: "./admin/classes.fyi.pem",
         keyFile: "./admin/classes.fyi.key",
-      }),
-});
+      }
+);
 
 // Stop the updates interval, the program is done
 cancelUpdates();
