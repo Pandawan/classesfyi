@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter, RouteRecordRaw } from "vue-router";
 
 import Home from "./views/Home.vue";
+import About from "./views/About.vue";
 import UserForm from "./views/User/UserForm.vue";
 import UserData from "./views/User/UserData.vue";
 import CampusLookup from "./views/Lookup/CampusLookup.vue";
@@ -26,6 +27,11 @@ const routes = [
     path: "/",
     component: Home,
     name: "home",
+  },
+  {
+    path: "/about",
+    component: About,
+    name: "about",
   },
   {
     path: "/user",

@@ -26,7 +26,7 @@ export default defineComponent({
   setup() {
     const routes = [
       { to: "/", text: "Home" },
-      // { to: "/user", text: "User" },
+      { to: "/about", text: "About" },
     ];
     const router = useRouter();
     const activeRoute = computed(() => router.currentRoute.value.path);
