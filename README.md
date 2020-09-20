@@ -1,5 +1,11 @@
 # Classes.fyi
 
+## TODO
+
+- Move server to new OpenCourseAPI
+- Allow for refresh rate option in .env
+- Better searching? (fuzzy)
+
 ## Website
 
 ### Index `/`

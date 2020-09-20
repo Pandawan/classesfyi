@@ -47,14 +47,24 @@ export default defineComponent({
 .error-message {
   color: red;
 }
-.active-input {
-  border-right: none;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  flex: 1;
+.active {
+  display: flex;
+  flex-direction: column;
 }
-.active-button {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+
+@media (min-width: 400px) {
+  .active {
+    flex-direction: row;
+  }
+  .active-input {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    flex: 1;
+  }
+  .active-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 }
 </style>

@@ -77,12 +77,24 @@ export default {
 
 .seats {
   display: flex;
+  flex-direction: column;
 }
 .seats > *:not(:first-child) {
   margin-left: 0.5rem;
 }
 .seats > *:not(:last-child) {
   margin-right: 0.5rem;
+}
+
+.active {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 400px) {
+  .seats {
+    flex-direction: row;
+  }
 }
 
 .schedule-list {

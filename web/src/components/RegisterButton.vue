@@ -70,18 +70,26 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style scoped>
 .active {
   display: flex;
+  flex-direction: column;
 }
-.active .active-input {
-  border-right: none;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.active .active-button {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+
+@media (min-width: 400px) {
+  .active {
+    flex-direction: row;
+  }
+  .active-input {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    flex: 1;
+  }
+  .active-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 }
 .error-input {
   border-color: #ff7975;
