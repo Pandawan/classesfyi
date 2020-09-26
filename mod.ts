@@ -2,8 +2,8 @@ import {
   Application,
   isHttpError,
   send,
-} from "https://deno.land/x/oak@v6.1.0/mod.ts";
-import { green } from "https://deno.land/std@0.68.0/fmt/colors.ts";
+} from "https://deno.land/x/oak@v6.2.0/mod.ts";
+import { green } from "https://deno.land/std@0.71.0/fmt/colors.ts";
 import {
   router as webRouter,
   staticMiddleware,
@@ -72,14 +72,14 @@ app.addEventListener("listen", ({ secure, hostname, port }) => {
 await app.listen(
   DEV_MODE
     ? {
-        port: 3000,
-      }
+      port: 3000,
+    }
     : {
-        port: 443,
-        secure: true,
-        certFile: "./admin/classes.fyi.pem",
-        keyFile: "./admin/classes.fyi.key",
-      }
+      port: 443,
+      secure: true,
+      certFile: "./admin/classes.fyi.pem",
+      keyFile: "./admin/classes.fyi.key",
+    },
 );
 
 // Stop the updates interval, the program is done

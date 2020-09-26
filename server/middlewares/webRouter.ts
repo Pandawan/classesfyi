@@ -2,7 +2,7 @@ import {
   Router,
   send,
   Middleware,
-} from "https://deno.land/x/oak@v6.1.0/mod.ts";
+} from "https://deno.land/x/oak@v6.2.0/mod.ts";
 
 const router = new Router();
 

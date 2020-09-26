@@ -4,6 +4,8 @@ Get updates when your classes's seats open up.
 
 ## TODO
 
+- File bug report in vue-router (when switching between about to home, it doesn't remove the non-first elements of the page)
+- Always show the unregister button, not just when the class is not available.
 - Cleanup CSS
 - Favicon
 - Add a back button

@@ -4,12 +4,12 @@ import {
   white,
   red,
   bgYellow,
-} from "https://deno.land/std@0.68.0/fmt/colors.ts";
+} from "https://deno.land/std@0.71.0/fmt/colors.ts";
 import {
   Status,
   Context,
   Middleware,
-} from "https://deno.land/x/oak@v6.1.0/mod.ts";
+} from "https://deno.land/x/oak@v6.2.0/mod.ts";
 const X_RESPONSE_TIME: string = "X-Response-Time";
 
 export const logger: Middleware = async (
