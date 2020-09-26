@@ -1,5 +1,8 @@
 <template>
-  <h2>User {{email}}</h2>
+  <h2>
+    <BackButton />
+    <span>User {{email}}</span>
+  </h2>
   <section>
     <div class="header">
       <h3>Currently Registered Classes</h3>
@@ -27,9 +30,7 @@
     >
       <div v-if="error === null && classInfo !== null" class="class">
         <ClassView :classData="classInfo">
-          <div v-if="classInfo.seats === 0 && classInfo.wait_seats === 0">
-            <UnregisterButton :classInfo="shortClassInfo" :email="email" />
-          </div>
+          <UnregisterButton :classInfo="shortClassInfo" :email="email" />
         </ClassView>
       </div>
       <div v-else-if="error !== null">
@@ -54,6 +55,7 @@ import { APIError } from "../../utilities/APIError";
 import ClassView from "../../components/ClassView.vue";
 import UnregisterButton from "../../components/UnregisterButton.vue";
 import UnregisterAllButton from "../../components/UnregisterAllButton.vue";
+import BackButton from "../../components/BackButton.vue";
 
 export default defineComponent({
   name: "UserData",
@@ -62,6 +64,7 @@ export default defineComponent({
     ClassView,
     UnregisterButton,
     UnregisterAllButton,
+    BackButton,
   },
   setup(props) {
     const route = useRoute();

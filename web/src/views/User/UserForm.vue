@@ -1,7 +1,14 @@
 <template>
-  <p>See and manage the classes you're registered to</p>
+  <h2>
+    <BackButton />
+    <span>User Information</span>
+  </h2>
+  <label for="email">
+    <p>See and manage the classes you're registered to</p>
+  </label>
   <form @submit="submit" class="active">
     <input
+      id="email"
       v-model="input"
       v-on:change="error = null"
       :class="`active-input ${error ? 'error-input' : ''}`"
@@ -17,8 +24,13 @@
 import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
 import { emailStore } from "../../stores/email";
+import BackButton from "../../components/BackButton.vue";
+
 export default defineComponent({
   name: "UnregisterForm",
+  components: {
+    BackButton,
+  },
   setup(props) {
     const router = useRouter();
     const error = ref<string | null>(null);

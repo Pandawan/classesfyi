@@ -2,7 +2,10 @@
   <div
     v-if="campusId !== null && departmentId !== null && courseInfo !== null && classes !== null && error === null"
   >
-    <h2>{{ campusId.toUpperCase() }} {{ departmentId }}{{ courseInfo.course }} {{ courseInfo.title }} Classes</h2>
+    <h2>
+      <BackButton />
+      <span>{{ campusId.toUpperCase() }} {{ departmentId }}{{ courseInfo.course }} {{ courseInfo.title }} Classes</span>
+    </h2>
     <SearchableList
       placeholder="Search by CRN or instructor..."
       :items="classes"
@@ -43,6 +46,7 @@ import {
 import { APIError } from "../../utilities/APIError";
 import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
 import RegisterButton from "../../components/RegisterButton.vue";
+import BackButton from "../../components/BackButton.vue";
 
 export default defineComponent({
   name: "Lookup",
@@ -50,6 +54,7 @@ export default defineComponent({
     SearchableList,
     ClassView,
     RegisterButton,
+    BackButton,
   },
   setup(props) {
     const route = useRoute();

@@ -1,6 +1,9 @@
 <template>
   <section>
-    <h2>About</h2>
+    <h2>
+      <BackButton />
+      <span>About</span>
+    </h2>
     <p>Classes.fyi aims to help student register for their classes more easily.</p>
     <p>
       Because of the limited availability of classes,
@@ -39,8 +42,13 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import BackButton from "../components/BackButton.vue";
+
 export default defineComponent({
   name: "About",
+  components: {
+    BackButton,
+  },
 });
 </script>
 

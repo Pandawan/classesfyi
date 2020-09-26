@@ -1,6 +1,9 @@
 <template>
   <div v-if="campusId !== null && departmentId !== null && courses !== null && error === null">
-    <h2>{{ campusId.toUpperCase() }} {{ departmentName }} Courses</h2>
+    <h2>
+      <BackButton />
+      <span>{{ campusId.toUpperCase() }} {{ departmentName }} Courses</span>
+    </h2>
     <SearchableList
       placeholder="Search for a course..."
       :items="courses"
@@ -35,11 +38,13 @@ import {
 } from "../../utilities/openCourseApi";
 import { APIError } from "../../utilities/APIError";
 import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
+import BackButton from "../../components/BackButton.vue";
 
 export default defineComponent({
   name: "Lookup",
   components: {
     SearchableList,
+    BackButton,
   },
   setup(props) {
     const route = useRoute();
