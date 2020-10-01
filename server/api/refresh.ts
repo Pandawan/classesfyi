@@ -29,7 +29,7 @@ function getRegisteredClasses(): ClassInfo[] {
   function getAllPathsToKey(
     obj: any,
     key: string,
-    prev: string[] = []
+    prev: string[] = [],
   ): string[][] {
     const result: string[][] = [];
     for (let k in obj) {
@@ -71,7 +71,7 @@ function getRegisteredClasses(): ClassInfo[] {
  * @param classes List of classes to fetch class data for
  */
 async function getClassDataBatch(
-  classes: ClassInfo[]
+  classes: ClassInfo[],
 ): Promise<{
   [campusId: string]: [Error, null] | [null, { [crn: string]: ClassData }];
 }> {
@@ -83,7 +83,7 @@ async function getClassDataBatch(
     Object.entries(groupedClasses).map(([campusId, campusData]) => [
       campusId,
       campusData.map((classInfo) => classInfo.CRN),
-    ])
+    ]),
   );
 
   // Prepare data to be sent to the API, grouped by campus
@@ -94,7 +94,7 @@ async function getClassDataBatch(
         course: classInfo.course,
         dept: classInfo.department,
       })),
-    ])
+    ]),
   );
 
   // Make the request for each campus and format the data
@@ -104,12 +104,12 @@ async function getClassDataBatch(
   ]): Promise<
     | [string, Error, null]
     | [
-        string,
-        null,
-        {
-          [k: string]: ClassData;
-        }
-      ]
+      string,
+      null,
+      {
+        [k: string]: ClassData;
+      },
+    ]
   > {
     // Make the request with all of the class data
     const res = await fetch(
@@ -122,7 +122,7 @@ async function getClassDataBatch(
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     // If the request went well, start working on the data
@@ -136,7 +136,7 @@ async function getClassDataBatch(
         Object.fromEntries(
           Object.entries(course).filter(([crn]) =>
             wantedCRNs[campusId].includes(crn)
-          )
+          ),
         )
       );
       // Flatten the array of objects into a single objects of { [crn: string]: UnformattedClassData[] }
@@ -147,12 +147,12 @@ async function getClassDataBatch(
               ...accum,
               ...depts,
             };
-          }, {})
+          }, {}),
         ).map(([crn, unformattedClassData]) => [
           crn,
           // Format the UnformattedClassData[] into ClassData
           formatClassData(unformattedClassData),
-        ])
+        ]),
       );
       return [campusId, null, formattedData];
     } else {
@@ -170,7 +170,7 @@ async function getClassDataBatch(
       ...accumulator,
       [campusId]: result,
     }),
-    {}
+    {},
   );
 }
 
@@ -179,7 +179,7 @@ async function getClassDataBatch(
  * @param classesData
  */
 export function updateClassesStatus(
-  classesData: Array<[ClassInfo, ClassData]>
+  classesData: Array<[ClassInfo, ClassData]>,
 ): UpdatedClassData[] {
   const importantUpdates: UpdatedClassData[] = [];
 
@@ -206,16 +206,14 @@ export function updateClassesStatus(
         previousData["status"] !== classData["status"])
     ) {
       // Was 0 seats, is no longer 0 seats
-      const seatsChange =
-        previousData["seats"] === 0 && classData["seats"] !== 0;
+      const seatsChange = previousData["seats"] === 0 &&
+        classData["seats"] !== 0;
       // Was 0 seats, was 0 waitlist, is not 0 waitlist
-      const waitlistChange =
-        previousData["seats"] === 0 &&
+      const waitlistChange = previousData["seats"] === 0 &&
         previousData["wait_seats"] === 0 &&
         classData["wait_seats"] !== 0;
       // Changed status and is not Full right now
-      const statusChange =
-        previousData["status"] !== classData["status"] &&
+      const statusChange = previousData["status"] !== classData["status"] &&
         classData["status"] !== "Full";
 
       // Compare previous data to current using ClassData & save those that are important
@@ -275,7 +273,7 @@ export function getRegisteredEmails(classesUpdates: UpdatedClassData[]) {
  * @return A dictionary of emails and data-to-send
  */
 async function refreshClasses(
-  classes: ClassInfo[]
+  classes: ClassInfo[],
 ): Promise<[Record<string, UpdatedClassData[]>, Error[]]> {
   const emailsToSend: { [email: string]: UpdatedClassData[] } = {};
 
@@ -294,13 +292,13 @@ async function refreshClasses(
       } else if (classDatas !== null) {
         // Note: With indexes, might not need to pass in the class information as could be able to search simply through CRN
         const dataToUpdate: Array<[ClassInfo, ClassData]> = Object.entries(
-          classDatas
+          classDatas,
         ).map(
           ([crn, classData]) =>
             [classes.find((classInfo) => classInfo.CRN === crn), classData] as [
               ClassInfo,
-              ClassData
-            ]
+              ClassData,
+            ],
         );
 
         const updates = updateClassesStatus(dataToUpdate);
@@ -326,7 +324,7 @@ export async function refresh() {
 
   // Refresh them
   const [updatedClassDataByEmail, campusErrors] = await refreshClasses(
-    classesToUpdate
+    classesToUpdate,
   );
 
   if (campusErrors.length !== 0) {
@@ -335,7 +333,7 @@ export async function refresh() {
 
   // Attempt to send this data by email
   const emailSendingAttempts = await formatAndSendEmail(
-    updatedClassDataByEmail
+    updatedClassDataByEmail,
   );
 
   return {

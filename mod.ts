@@ -2,17 +2,14 @@ import {
   Application,
   isHttpError,
   send,
-} from "https://deno.land/x/oak@v6.2.0/mod.ts";
+} from "https://deno.land/x/oak@v6.3.0/mod.ts";
 import { green } from "https://deno.land/std@0.71.0/fmt/colors.ts";
-import {
-  router as webRouter,
-  staticMiddleware,
-  //notFound,
-} from "./server/middlewares/webRouter.ts";
+import { config } from "https://deno.land/x/dotenv@v0.5.0/mod.ts";
+
+import { router as webRouter } from "./server/middlewares/webRouter.ts";
 import { router as apiRouter } from "./server/middlewares/apiRouter.ts";
 import { logger, responseTime } from "./server/middlewares/logger.ts";
 import { updateTask } from "./server/tasks/updateTask.ts";
-import { config } from "https://deno.land/x/dotenv@v0.5.0/mod.ts";
 import { strToBool } from "./server/utilities/strToBool.ts";
 
 const DEV_MODE = strToBool(config().DEV_MODE, true);
@@ -51,17 +48,8 @@ app.use(responseTime);
 // Add router middleware
 app.use(apiRouter.routes());
 app.use(apiRouter.allowedMethods());
-/*
 app.use(webRouter.routes());
 app.use(webRouter.allowedMethods());
-*/
-
-// Handle static content
-app.use(staticMiddleware);
-app.use(async (context) => {
-  await send(context, `web/dist/index.html`);
-});
-// app.use(notFound);
 
 // Start server
 app.addEventListener("listen", ({ secure, hostname, port }) => {

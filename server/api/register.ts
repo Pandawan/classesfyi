@@ -12,7 +12,7 @@ import { db } from "./utilities/realdb.ts";
  * @param data The data containing the email to register and the classes to register to.
  */
 export function register(
-  data: RegistrationData
+  data: RegistrationData,
 ): RegistrationResponse<"registered" | "duplicated"> {
   // Keep track of a list of classes
   const newlyRegisteredClasses: ClassInfo[] = [];
@@ -28,8 +28,8 @@ export function register(
     ];
 
     // Get list of currently registered emails for the class
-    const registeredEmails =
-      db.get<StoredClassData>(path, true)?.registered ?? [];
+    const registeredEmails = db.get<StoredClassData>(path, true)?.registered ??
+      [];
 
     // Register the email address into the class if not done already
     if (registeredEmails.includes(data.email) === false) {
@@ -54,8 +54,8 @@ export function register(
           classRequested.CRN === classRegistered.CRN &&
           classRequested.campus === classRegistered.campus &&
           classRequested.department === classRegistered.department &&
-          classRequested.course === classRegistered.course
-      ) === true
+          classRequested.course === classRegistered.course,
+      ) === true,
   );
 
   registeredClasses.push(...classesToAdd);
@@ -64,14 +64,13 @@ export function register(
   return {
     result: data.classes.map((classRequested) => {
       // Check whether or not the class to be requested actually needed to be added
-      const classNeededToBeAdded =
-        classesToAdd.some(
-          (classRegistered) =>
-            classRequested.CRN === classRegistered.CRN &&
-            classRequested.campus === classRegistered.campus &&
-            classRequested.department === classRegistered.department &&
-            classRequested.course === classRegistered.course
-        ) === true;
+      const classNeededToBeAdded = classesToAdd.some(
+        (classRegistered) =>
+          classRequested.CRN === classRegistered.CRN &&
+          classRequested.campus === classRegistered.campus &&
+          classRequested.department === classRegistered.department &&
+          classRequested.course === classRegistered.course,
+      ) === true;
 
       return {
         type: classNeededToBeAdded ? "registered" : "duplicated",

@@ -4,12 +4,10 @@ Get updates when your classes's seats open up.
 
 ## TODO
 
-- File bug report in vue-router (when switching between about to home, it doesn't remove the non-first elements of the page)
 - Cleanup CSS
-- Favicon
-- Allow for refresh rate option in .env
 - Better searching? (fuzzy)
 - Move server to new OpenCourseAPI?
+- Better routing in Deno/Oak
 
 ## Website
 
@@ -18,6 +16,17 @@ Frontend website is made using [Vue 3](https://github.com/vuejs/vue-next) and [V
 ## Server
 
 Backend server is made in [Deno](https://github.com/denoland/deno). It uses the old [OwlAPI](https://github.com/OpenCourseAPI/OwlAPI) (rather than OpenCourseAPI) because of its batch request feature.
+
+### Routing
+
+- POST `/user`: Get user information (currently registered classes).
+- POST `/register`: Register a specific email address to specific class updates.
+- POST `/unregister`: Unregister a specific email address from specific class updates.
+- POST `/unregister_all`: Unregister a specific email address from all updates (clearing it entirely from the database).
+- POST `/refresh`: Refresh the class data and send emails if need be.
+- GET `/robots.txt`: Serve robot.txt file data
+- GET `/_assets/*`: Serve static files in `web/dist/_assets/*`
+- GET `/*`: Serve `web/dist/index.html` and let vue-router handle the rest.
 
 ## Email Sending
 

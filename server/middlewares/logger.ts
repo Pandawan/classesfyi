@@ -9,7 +9,7 @@ import {
   Status,
   Context,
   Middleware,
-} from "https://deno.land/x/oak@v6.2.0/mod.ts";
+} from "https://deno.land/x/oak@v6.3.0/mod.ts";
 const X_RESPONSE_TIME: string = "X-Response-Time";
 
 export const logger: Middleware = async (

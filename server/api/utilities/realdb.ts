@@ -9,5 +9,5 @@ const { DB_DRY_RUN } = config();
 export const db = new Database<StoredFullData>(
   "data.json",
   { registration: {}, users: {} },
-  { dryrun: strToBool(DB_DRY_RUN, false) }
+  { dryrun: strToBool(DB_DRY_RUN, false) },
 );
