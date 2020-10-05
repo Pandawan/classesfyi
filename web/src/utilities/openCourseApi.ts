@@ -190,22 +190,24 @@ export async function getCourseClasses(
  */
 export async function getClassInfo(
   campusId: CampusId,
-  departmentId: string,
-  courseId: string,
   CRN: number,
 ): Promise<[APIError, null] | [null, ClassInfo | undefined]> {
-  const [error, courseData] = await getCourseClasses(
-    campusId,
-    departmentId,
-    courseId,
+  const res = await fetch(
+    `https://opencourse.dev/${campusId}/classes/${CRN}`,
   );
 
-  if (error !== null) {
-    return [error, null];
+  if (res.status === 200) {
+    const data = await res.json();
+    return [
+      null,
+      {
+        ...data,
+        department: data.dept,
+        campus: campusId.toLowerCase(),
+      },
+    ];
+  } else {
+    const error = (await res.json()).error;
+    return [new APIError(res.status, error), null];
   }
-
-  const classInfo: ClassInfo | undefined = courseData.find((classInfo) =>
-    classInfo.CRN === CRN
-  );
-  return [null, classInfo];
 }

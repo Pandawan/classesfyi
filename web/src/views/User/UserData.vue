@@ -1,7 +1,7 @@
 <template>
   <h2>
     <BackButton />
-    <span>User {{email}}</span>
+    <span>User {{ email }}</span>
   </h2>
   <section>
     <div class="header">
@@ -18,15 +18,27 @@
       placeholder="Search..."
       :items="possibleClasses"
       v-slot="{ item: [shortClassInfo, [error, classInfo]] }"
-      :filter="([shortClassInfo, [error, classInfo]], query) => {
-        // Run a basic query on short class info
-        shouldAppear = `${shortClassInfo.department} ${shortClassInfo.course} ${shortClassInfo.department}${shortClassInfo.course} ${shortClassInfo.CRN}`.toLowerCase().indexOf(query.toLowerCase()) != -1;
-        if (error === null) {
-          // Search by instructor name
-          shouldAppear = shouldAppear || classInfo.times.some((classSchedule) => classSchedule.instructor.some((instructor) => instructor.toLowerCase().indexOf(query.toLowerCase()) != -1));
+      :filter="
+        ([shortClassInfo, [error, classInfo]], query) => {
+          // Run a basic query on short class info
+          shouldAppear =
+            `${shortClassInfo.department} ${shortClassInfo.course} ${shortClassInfo.department}${shortClassInfo.course} ${shortClassInfo.CRN}`
+              .toLowerCase()
+              .indexOf(query.toLowerCase()) != -1;
+          if (error === null) {
+            // Search by instructor name
+            shouldAppear =
+              shouldAppear ||
+              classInfo.times.some((classSchedule) =>
+                classSchedule.instructor.some(
+                  (instructor) =>
+                    instructor.toLowerCase().indexOf(query.toLowerCase()) != -1
+                )
+              );
+          }
+          return shouldAppear;
         }
-        return shouldAppear;
-    }"
+      "
     >
       <div v-if="error === null && classInfo !== null" class="class">
         <ClassView :classData="classInfo">
@@ -34,12 +46,16 @@
         </ClassView>
       </div>
       <div v-else-if="error !== null">
-        <p>Error loading {{shortClassInfo.campus.toUpperCase()}} {{shortClassInfo.department}}{{shortClassInfo.course}} {{shortClassInfo.CRN}}</p>
-        <p>{{error}}</p>
+        <p>
+          Error loading {{ shortClassInfo.campus.toUpperCase() }}
+          {{ shortClassInfo.department }}{{ shortClassInfo.course }}
+          {{ shortClassInfo.CRN }}
+        </p>
+        <p>{{ error }}</p>
       </div>
     </SearchableList>
     <div v-if="classesError !== null">
-      <p>{{classesError}}</p>
+      <p>{{ classesError }}</p>
     </div>
   </section>
 </template>
@@ -82,12 +98,7 @@ export default defineComponent({
         const tasks = result.map(async (shortClassInfo) => {
           return [
             shortClassInfo,
-            await getClassInfo(
-              shortClassInfo.campus,
-              shortClassInfo.department,
-              shortClassInfo.course,
-              shortClassInfo.CRN
-            ),
+            await getClassInfo(shortClassInfo.campus, shortClassInfo.CRN),
           ] as [ShortClassInfo, [APIError, null] | [null, ClassInfo]];
         });
         const classInfos = await Promise.all(tasks);
