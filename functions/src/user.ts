@@ -3,6 +3,13 @@ import * as admin from "firebase-admin";
 
 import { store } from "./index";
 
+/**
+ * Get an user's currently registered classes.
+ * 
+ * Path: `/registerClasses`
+ * 
+ * Body: `{  email: string }`
+ */
 export const getUserClasses = functions.https.onRequest(
   async (request, response) => {
     // Get & verify request params

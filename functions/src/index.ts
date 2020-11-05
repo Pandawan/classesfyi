@@ -5,3 +5,4 @@ admin.initializeApp();
 export const store = admin.firestore();
 
 export * from "./user";
+export * from "./register";
