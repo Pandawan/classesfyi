@@ -6,4 +6,5 @@ export const store = admin.firestore();
 
 export { getUserClasses } from "./user";
 export { registerClasses } from "./register";
+export { unregisterClasses } from "./unregister";
 export { unregisterAllClasses } from "./unregisterAll";
