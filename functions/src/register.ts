@@ -2,6 +2,12 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 import { store } from "./index";
+import { ClassData, isClassData } from "./utilities/classData";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+} from "./utilities/response";
+import { verifyEmail } from "./utilities/verifyEmail";
 
 /**
  * Register the given user for updates from the given classes.
@@ -12,66 +18,58 @@ import { store } from "./index";
  * ```
  * { 
  *  email: string, 
- *  classes: { 
- *    campus: string, 
- *    department: string, 
- *    course: string, 
- *    crn: number 
- *  }[] 
+ *  classes: ClassData[] 
  * }
  * ```
  */
 export const registerClasses = functions.https.onRequest(
   async (request, response) => {
-    // Get & verify request params
-    const email = request.body?.email;
-    if (email === undefined) {
-      response.status(400).send("Email field is required.");
-      return;
-    } else if (typeof email !== "string") {
-      response.status(400).send("Email must be a string.");
+    // Get & verify email
+    const emailResult = verifyEmail(request.body?.email);
+    if (emailResult.type === "error") {
+      response.status(400).send(createErrorResponse(emailResult.message));
       return;
     }
+    const email = emailResult.value;
 
     // Get & verify user
-    const user = await store.collection("users").doc(email).get();
-    if (user.exists === false) {
-      response.status(404).send("User not found.");
+    const userRef = store.collection("users").doc(email);
+    if ((await userRef.get()).exists === false) {
+      // NOTE: Not updating user snapshot because only care about the reference to it, not its data.
+      await userRef.create({ registered_classes: [] });
+    }
+
+    // Verify classes is an array
+    const potentialClassList = request.body?.classes;
+    if (
+      potentialClassList === undefined ||
+      Array.isArray(potentialClassList) === false ||
+      potentialClassList.length === 0
+    ) {
+      response.status(400).send(
+        createErrorResponse(
+          "Classes field is required and must be a non-empty array of classes.",
+        ),
+      );
       return;
     }
 
-    const classesToLookFor = request.body?.classes;
-    if (classesToLookFor === undefined) {
-      response.status(400).send("Classes field is required.");
-      return;
-    } else if (Array.isArray(classesToLookFor) === false) {
-      response.status(400).send("Classes must be an array of classes.");
-      return;
-    } else if (classesToLookFor.length === 0) {
-      response.status(400).send("Classes array must not be empty.");
+    // Validate each class' format
+    const invalidClasses = potentialClassList
+      .filter((potentialClass: any) => isClassData(potentialClass) === false);
+    if (invalidClasses.length !== 0) {
+      response.status(400).send(createErrorResponse(
+        `Classes must be objects in the format { campus: string, department: string, course: string, crn: number }`,
+        invalidClasses,
+      ));
       return;
     }
 
-    const classesToAdd = [];
-
-    // TODO: Attempt to register for all classes and report all the ones that succeeded & failed instead of stopping at first error
+    const classesToLookFor: ClassData[] = potentialClassList;
+    const classesToAddToUser: FirebaseFirestore.DocumentReference[] = [];
 
     // Loop through user given list of classes
     for (const classToLookFor of classesToLookFor) {
-      // Validate the class parameters
-      if (
-        typeof classToLookFor !== "object" ||
-        typeof classToLookFor.campus !== "string" ||
-        typeof classToLookFor.department !== "string" ||
-        typeof classToLookFor.course !== "string" ||
-        typeof classToLookFor.crn !== "number"
-      ) {
-        response.status(400).send(
-          "Class must be an object in the format { campus: string, department: string, course: string, crn: number }",
-        );
-        return;
-      }
-
       // Look for class with those exact criteria
       const classToRegister = await store.collection("classes")
         .where("campus", "==", classToLookFor.campus)
@@ -80,37 +78,49 @@ export const registerClasses = functions.https.onRequest(
         .where("crn", "==", classToLookFor.crn)
         .get();
 
-      // Report not found immediately and stop
+      // Create class that hasn't been registered before
       if (classToRegister.empty) {
-        response.status(404).send(
-          `Could not find class with given parameters: ${
-            JSON.stringify(classToLookFor)
-          }`,
-        );
-        return;
-      }
+        const newClassRef = store.collection("classes").doc();
+        // Create that class
+        await newClassRef.create({
+          campus: classToLookFor.campus,
+          department: classToLookFor.department,
+          course: classToLookFor.course,
+          crn: classToLookFor.crn,
+        });
+        classesToAddToUser.push(newClassRef);
+      } // Class does exist
+      else {
+        // Check that only one class matches these criteria, but recover graciously if more than one
+        if (classToRegister.size !== 1) {
+          functions.logger.error(
+            "More than one class found for query",
+            classToLookFor,
+          );
+        }
 
-      // Check that only one class matches these criteria, but recover graciously if more than one
-      if (classToRegister.size !== 1) {
-        functions.logger.error(
-          "More than one class found for query",
-          classToLookFor,
-        );
+        // Push class to register references to list of classes to add
+        classesToAddToUser.push(...classToRegister.docs.map((doc) => doc.ref));
       }
-
-      // Push class to register references to list of classes to add
-      classesToAdd.push(...classToRegister.docs.map((doc) => doc.ref));
     }
 
-    if (classesToAdd.length !== 0) {
+    if (classesToAddToUser.length !== 0) {
       // Write all the classes at the end, so that any error occuring means nothing gets written.
-      await user.ref.update({
+      await userRef.update({
         registered_classes: admin.firestore.FieldValue.arrayUnion(
-          ...classesToAdd,
+          ...classesToAddToUser,
         ),
       });
 
-      response.send("Successfully registered for classes.");
+      response.send(
+        createSuccessResponse("Successfully registered for classes."),
+      );
+    } else {
+      response.send(
+        createErrorResponse(
+          "Something went wrong, there were no classes to register.",
+        ),
+      );
     }
   },
 );

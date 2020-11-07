@@ -2,40 +2,48 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 import { store } from "./index";
+import { verifyEmail } from "./utilities/verifyEmail";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+} from "./utilities/response";
 
 /**
  * Get an user's currently registered classes.
  * 
- * Path: `/registerClasses`
+ * Path: `/getUserClasses`
  * 
- * Body: `{  email: string }`
+ * Body: `{ email: string }`
  */
 export const getUserClasses = functions.https.onRequest(
   async (request, response) => {
-    // Get & verify request params
-    const email: string | undefined = request.body?.email;
-    if (email === undefined) {
-      response.status(400).send("Email field is required.");
+    // Get & verify email
+    const emailResult = verifyEmail(request.body?.email);
+    if (emailResult.type === "error") {
+      response.status(400).send(createErrorResponse(emailResult.message));
       return;
     }
+    const email = emailResult.value;
 
     // Get & verify user
-    const user = await store.collection("users").doc(email).get();
+    const userRef = store.collection("users").doc(email);
+    const user = await userRef.get();
     if (user.exists === false) {
-      response.status(404).send("User not found.");
+      response.status(404).send(createErrorResponse("User not found."));
       return;
     }
 
     // Get & verify user's registered_classes field
-    const registeredClasses: (FirebaseFirestore.DocumentReference | string)[] =
-      user.data()
+    const registeredClasses:
+      | (FirebaseFirestore.DocumentReference | string)[]
+      | undefined = user.data()
         ?.registered_classes;
     if (registeredClasses === undefined) {
       functions.logger.error(
         `User ${email} does not have a registered_classes field.`,
       );
       // Recover from error by sending an empty list
-      response.send([]);
+      response.send(createSuccessResponse([]));
       return;
     }
 
@@ -73,6 +81,6 @@ export const getUserClasses = functions.https.onRequest(
 
     const classesWithData = await Promise.all(tasks);
 
-    response.send(classesWithData);
+    response.send(createSuccessResponse(classesWithData));
   },
 );

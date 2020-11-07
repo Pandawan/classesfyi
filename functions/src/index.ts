@@ -4,5 +4,6 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 export const store = admin.firestore();
 
-export * from "./user";
-export * from "./register";
+export { getUserClasses } from "./user";
+export { registerClasses } from "./register";
+export { unregisterAllClasses } from "./unregisterAll";
