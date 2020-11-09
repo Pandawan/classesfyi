@@ -57,7 +57,8 @@ export const getUserClasses = functions.https.onRequest(
           // If reference is a string, it means it wasn't found
           if (typeof registeredClass === "string") {
             functions.logger.error(
-              `User ${email} references a class that does not exist: "${registeredClass}"`,
+              `User ${email} references a class that does not exist:`,
+              registeredClass,
             );
             // Recover from error by ignoring/filtering it
             return false;
@@ -67,7 +68,8 @@ export const getUserClasses = functions.https.onRequest(
               false
           ) {
             functions.logger.error(
-              `User ${email} references a class that with an unknown format: "${registeredClass}"`,
+              `User ${email} references a class that with an unknown format:`,
+              registeredClass,
             );
             // Recover from error by ignoring/filtering it
             return false;

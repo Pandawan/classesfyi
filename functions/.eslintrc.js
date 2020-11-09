@@ -42,7 +42,7 @@ module.exports = {
     "no-invalid-this": "error",
     "no-new-wrappers": "error",
     "no-param-reassign": "error",
-    "no-redeclare": "error",
+    // "no-redeclare": "error", // Comment out because function overloading errors out with this
     "no-sequences": "error",
     "no-shadow": [
       "error",

@@ -3,6 +3,12 @@ export interface ClassData {
   department: string;
   course: string;
   crn: number;
+
+  previous_data?: {
+    seats: number;
+    waitlist_seats: number;
+    status: "open" | "full" | "waitlist";
+  };
 }
 
 /**

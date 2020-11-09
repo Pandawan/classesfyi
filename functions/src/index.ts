@@ -8,3 +8,4 @@ export { getUserClasses } from "./user";
 export { registerClasses } from "./register";
 export { unregisterClasses } from "./unregister";
 export { unregisterAllClasses } from "./unregisterAll";
+export { updateClassesData } from "./update";

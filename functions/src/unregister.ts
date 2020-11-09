@@ -76,6 +76,7 @@ export const unregisterClasses = functions.https.onRequest(
     ) {
       functions.logger.error(
         `User ${email} does not have a registered_classes field.`,
+        registeredClasses,
       );
       response.send(
         createErrorResponse("User was not registered to any class."),
