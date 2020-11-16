@@ -3,7 +3,9 @@ import got from "got";
 
 import { store } from "./index";
 import { ClassData, isClassData } from "./utilities/classData";
+import { groupBy } from "./utilities/groupBy";
 import { createSuccessResponse } from "./utilities/response";
+import { sendEmail } from "./utilities/sendEmail";
 
 /**
  * Register the given user for updates from the given classes.
@@ -59,17 +61,11 @@ export const updateClassesData = functions.https.onRequest(
       }
     }
 
-    response.send(createSuccessResponse(emailSendingReports));
     functions.logger.log(
       "Successfully emailed users on their registered classes",
       usersToBeUpdated,
     );
-
-    // 1. Get all classes in collection
-    // 2. Send individual requests for each CRN (assuming there aren't enough users that this becomes an issue)
-    // 4. Check which classes have been updated and should be alerted
-    // 5. Go through all users and add a reference to the update class data
-    // 6. Send email to each user in the list that has at least one reference
+    response.send(createSuccessResponse(emailSendingReports));
   },
 );
 
@@ -84,17 +80,58 @@ type EmailReport = {
 
 async function sendEmailWithChanges(
   email: string,
-  changes: ClassDataWithChanges[],
+  classesWithChanges: ClassDataWithChanges[],
 ): Promise<EmailReport> {
-  // TODO: Send email
+  const formattedClassesWithChanges = classesWithChanges.map((
+    classWithChanges,
+  ) => ({
+    name: `${classWithChanges.department} ${classWithChanges.course}`
+      .toUpperCase(),
+    crn: classWithChanges.crn,
+    campus: classWithChanges.campus,
+    changes: classWithChanges.changes
+      .map((change) => {
+        if (change.type === "seats") {
+          if (change.updated === 1) {
+            return `There is 1 seat available (was ${change.previous})`;
+          } else {
+            return `There are ${change.updated} seats available (was ${change.previous})`;
+          }
+        } else if (change.type === "status") {
+          return `Class status is now ${change.updated} (was ${change.previous}).`;
+        } else if (change.type === "waitlist_seats") {
+          if (change.updated === 1) {
+            return `There is 1 waitlist seat available (was ${change.previous})`;
+          } else {
+            return `There are ${change.updated} waitlist seats available (was ${change.previous})`;
+          }
+        } else {
+          return undefined;
+        }
+      })
+      .filter((formattedChange) => formattedChange !== undefined) as string[],
+  }));
 
-  return {
-    type: "emailed",
+  const response = await sendEmail({
     email,
-  };
+    classesData: groupBy(formattedClassesWithChanges, ((item) => item.campus)),
+  });
+
+  console.log(response);
+
+  return (response[0].statusCode >= 200 && response[0].statusCode < 300)
+    ? {
+      type: "emailed",
+      email,
+    }
+    : {
+      type: "error",
+      email,
+      error: JSON.stringify(response[0].body),
+    };
 }
 
-interface ClassDataWithChanges extends ClassData {
+export interface ClassDataWithChanges extends ClassData {
   changes: ClassDataChange[];
 }
 
@@ -183,7 +220,8 @@ function getImportantChanges(
   // Seats is no longer 0
   if (
     previousData.seats !== updatedClassData.seats &&
-    previousData.seats === 0 && updatedClassData.seats !== 0
+    previousData.seats === 0 && updatedClassData.seats !== 0 &&
+    updatedClassData.seats > 0
   ) {
     changes.push({
       type: "seats",
@@ -195,7 +233,8 @@ function getImportantChanges(
   // Waitlist seats is no longer 0
   if (
     previousData.waitlist_seats !== updatedClassData.wait_seats &&
-    previousData.waitlist_seats === 0 && updatedClassData.wait_seats !== 0
+    previousData.waitlist_seats === 0 && updatedClassData.wait_seats !== 0 &&
+    updatedClassData.wait_seats > 0
   ) {
     changes.push({
       type: "waitlist_seats",
