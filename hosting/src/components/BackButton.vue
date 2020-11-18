@@ -37,8 +37,8 @@ export default defineComponent({
   margin-left: 0.2em;
   width: 0.5em;
   height: 0.5em;
-  border-top: 0.15em solid #333;
-  border-right: 0.15em solid #333;
+  border-top: 0.15em solid var(--important-text);
+  border-right: 0.15em solid var(--important-text);
   -moz-transform: rotate(-135deg);
   -webkit-transform: rotate(-135deg);
   transform: rotate(-135deg);

@@ -36,21 +36,25 @@
     <div>Units: {{ classData.units }}</div>
     <div>
       Schedule:
-      <span
-        v-if="
-          classData.times.every(
-            (s) =>
-              s['days'] === 'TBA' &&
-              s['start_time'] === 'TBA' &&
-              s['end_time'] === 'TBA'
-          )
-        "
-        >This class is fully online and asynchronous with no scheduled
-        meetings.</span
-      >
-      <ul v-else class="schedule-list">
+      <ul class="schedule-list">
+        <!--
+          Make this element a special Info element
         <li
           v-if="
+            classData.times.every(
+              (s) =>
+                s['days'] === 'TBA' &&
+                s['start_time'] === 'TBA' &&
+                s['end_time'] === 'TBA'
+            )
+          "
+        >
+          This class is fully online and asynchronous with no scheduled
+          meetings.
+        </li>
+        
+        <li
+          v-else-if="
             classData.times.some(
               (s) =>
                 s['days'] === 'TBA' &&
@@ -61,20 +65,26 @@
         >
           This class has some online asynchronous component.
         </li>
-        <li
-          v-for="time in classData.times.filter(
-            (s) =>
-              s['days'] !== 'TBA' &&
-              s['start_time'] !== 'TBA' &&
-              s['end_time'] !== 'TBA'
-          )"
-        >
-          <!-- TODO: Have some kind of link/popup that shows the time schedule in a calendar/weekly planner view -->
-
-          <div>On {{ time["days"] }}</div>
-          <div>From {{ time["start_time"] }} to {{ time["end_time"] }}</div>
+        -->
+        <li v-for="time in classData.times">
+          <!-- TODO: Have some kind of link/popup that shows the time schedule in a calendar/weekly planner view 
+            Or at least have it so hovering over time.days shows a list of all the full days?
+          -->
+          <div v-if="time.days !== 'TBA'">On {{ time.days }}</div>
+          <div v-if="time.start_time !== 'TBA' || time.end_time !== 'TBA'">
+            From {{ time.start_time }} to {{ time.end_time }}
+          </div>
+          <div
+            v-if="
+              time.days === 'TBA' &&
+              time.start_time === 'TBA' &&
+              time.end_time === 'TBA'
+            "
+          >
+            Asynchronous
+          </div>
           <!-- TODO: Have a RateMyProfessor link -->
-          <div>With {{ time.instructor.join(", and") }}</div>
+          <div>{{ time.type }} with {{ time.instructor.join(", and") }}</div>
         </li>
       </ul>
     </div>

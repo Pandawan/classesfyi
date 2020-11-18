@@ -144,6 +144,8 @@ export interface ClassInfo {
   status: ClassStatus;
   /** Schedule for the class */
   times: {
+    /** Type of class this time represents */
+    type: string;
     /** Days this class runs */
     days: string;
     /** Time the class starts "hh:mm a" */
@@ -197,12 +199,12 @@ export async function getClassInfo(
   );
 
   if (res.status === 200) {
-    const data = await res.json();
+    const classInfo = await res.json();
     return [
       null,
       {
-        ...data,
-        department: data.dept,
+        ...classInfo,
+        department: classInfo.dept,
         campus: campusId.toLowerCase(),
       },
     ];
