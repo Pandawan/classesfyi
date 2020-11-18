@@ -4,70 +4,69 @@ import got from "got";
 import { store } from "./index";
 import { ClassData, isClassData } from "./utilities/classData";
 import { groupBy } from "./utilities/groupBy";
-import { createSuccessResponse } from "./utilities/response";
 import { sendEmail } from "./utilities/sendEmail";
 
 /**
  * Register the given user for updates from the given classes.
  * 
- * Path: `/updateClassesData`
- * ```
+ * This is a pubsub scheduled job, which is automatically handled by Firebase.
  */
-export const updateClassesData = functions.https.onRequest(
-  async (request, response) => {
-    // Update firestore data and get a list of all classes that have important changes
-    const classesWithChanges = await getClassesWithImportantChanges();
+export const updateClassesData = functions.pubsub.schedule("every 5 minutes")
+  .onRun(
+    async (context) => {
+      // Update firestore data and get a list of all classes that have important changes
+      const classesWithChanges = await getClassesWithImportantChanges();
 
-    if (classesWithChanges.length === 0) {
-      // TODO: Better response message
-      response.send(createSuccessResponse("No class needed updates."));
-      return;
-    }
+      if (classesWithChanges.length === 0) {
+        functions.logger.debug("No class needed updates.");
+        return;
+      }
 
-    const usersToBeUpdated: Record<string, ClassDataWithChanges[]> = {};
+      const usersToBeUpdated: Record<string, ClassDataWithChanges[]> = {};
 
-    // Loop through all classes that have changes,
-    // and generate a record of users to be updated along with the changes to update them on
-    for (const [classRef, classDataWithChanges] of classesWithChanges) {
-      // Get all users that are registered to this specific class
-      const usersRegisteredToClass = await store.collection("users").where(
-        "registered_classes",
-        "array-contains",
-        classRef,
-      ).get();
-      if (usersRegisteredToClass.empty === true) break;
+      // Loop through all classes that have changes,
+      // and generate a record of users to be updated along with the changes to update them on
+      for (const [classRef, classDataWithChanges] of classesWithChanges) {
+        // Get all users that are registered to this specific class
+        const usersRegisteredToClass = await store.collection("users").where(
+          "registered_classes",
+          "array-contains",
+          classRef,
+        ).get();
+        if (usersRegisteredToClass.empty === true) break;
 
-      // Loop through these users and add the ClassDataWithChanges to that user (data to be emailed)
-      for (const registeredUser of usersRegisteredToClass.docs) {
-        const email = registeredUser.id;
-        if (usersToBeUpdated[email] === undefined) {
-          usersToBeUpdated[email] = [classDataWithChanges];
-        } else {
-          usersToBeUpdated[email].push(classDataWithChanges);
+        // Loop through these users and add the ClassDataWithChanges to that user (data to be emailed)
+        for (const registeredUser of usersRegisteredToClass.docs) {
+          const email = registeredUser.id;
+          if (usersToBeUpdated[email] === undefined) {
+            usersToBeUpdated[email] = [classDataWithChanges];
+          } else {
+            usersToBeUpdated[email].push(classDataWithChanges);
+          }
         }
       }
-    }
 
-    const emailSendingReports = [];
+      const emailSendingReports = [];
 
-    for (const email in usersToBeUpdated) {
-      if (Object.prototype.hasOwnProperty.call(usersToBeUpdated, email)) {
-        const classesToUpdateOn = usersToBeUpdated[email];
+      for (const email in usersToBeUpdated) {
+        if (Object.prototype.hasOwnProperty.call(usersToBeUpdated, email)) {
+          const classesToUpdateOn = usersToBeUpdated[email];
 
-        emailSendingReports.push(
-          // Attempt sending the email
-          await sendEmailWithChanges(email, classesToUpdateOn),
-        );
+          emailSendingReports.push(
+            // Attempt sending the email
+            await sendEmailWithChanges(email, classesToUpdateOn),
+          );
+        }
       }
-    }
 
-    functions.logger.log(
-      "Successfully emailed users on their registered classes",
-      usersToBeUpdated,
-    );
-    response.send(createSuccessResponse(emailSendingReports));
-  },
-);
+      functions.logger.log(
+        "Successfully emailed users on their registered classes",
+        usersToBeUpdated,
+        "\nEmail Reports: ",
+        emailSendingReports,
+      );
+    },
+  );
 
 type EmailReport = {
   type: "emailed";
