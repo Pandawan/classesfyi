@@ -177,11 +177,6 @@ export async function getCourseClasses(
         ...classInfo,
         department: classInfo.dept,
         campus: campusId.toLowerCase(),
-
-        // TODO: REMOVE DEBUG
-        status: "full",
-        seats: 0,
-        wait_seats: 0,
       })),
     ];
   } else {

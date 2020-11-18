@@ -11,7 +11,7 @@ import { sendEmail } from "./utilities/sendEmail";
  * 
  * This is a pubsub scheduled job, which is automatically handled by Firebase.
  */
-export const updateClassesData = functions.pubsub.schedule("every 5 minutes")
+export const updateClassesData = functions.pubsub.schedule("every 15 minutes")
   .onRun(
     async (context) => {
       // Update firestore data and get a list of all classes that have important changes
