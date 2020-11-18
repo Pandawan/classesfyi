@@ -1,0 +1,153 @@
+/* -------------------------------------
+    CSS VARIABLES
+------------------------------------- */
+html {
+  --background: #f6f6f6;
+  --content-background: #fff;
+  --side-text: #666;
+  --text: #333;
+  --important-text: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    --background: #1a1a1a;
+    --content-background: #262626;
+    --side-text: #ccc;
+    --text: #fafafa;
+    --important-text: #fff;
+  }
+}
+
+/* -------------------------------------
+    BASIC STYLING
+------------------------------------- */
+body {
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background-color: var(--background);
+  padding: 1em;
+}
+
+@media (min-width: 400px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+/* -------------------------------------
+    TYPOGRAPHY
+------------------------------------- */
+h1,
+h2,
+h3,
+h4 {
+  color: var(--important-text);
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0;
+  margin-bottom: 1em;
+}
+
+h1 {
+  font-size: 2.15rem;
+  font-weight: 300;
+}
+
+p,
+ul,
+ol {
+  font-weight: normal;
+  margin: 0;
+  margin-bottom: 1em;
+  padding: 0;
+  list-style-type: none;
+}
+p li,
+ul li,
+ol li {
+  list-style-position: inside;
+}
+
+a {
+  color: #3498db;
+  text-decoration: underline;
+}
+
+/* -------------------------------------
+    INPUT & BUTTON
+------------------------------------- */
+
+input,
+select {
+  display: inline-block;
+  padding: 0.35em 0.5em;
+  border: 0.1em solid var(--text);
+  background-color: var(--background);
+  border-radius: 0.12em;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-weight: 300;
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+select,
+option {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+select {
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat, repeat;
+  background-position: right 0.7em top 50%, 0 0;
+  background-size: 0.65em auto, 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  select {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23fafafa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  }
+}
+
+.button {
+  display: inline-block;
+  padding: 0.35em 1.2em;
+  border: 0.1em solid var(--important-text);
+  border-radius: 0.12em;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-weight: 300;
+  color: var(--important-text);
+  background-color: var(--background);
+  text-align: center;
+  transition: all 0.2s;
+}
+.button:hover,
+.button:active,
+.button:focus {
+  color: var(--content-background);
+  background-color: var(--important-text);
+}
+@media all and (max-width: 30em) {
+  input,
+  select,
+  .button {
+    display: block;
+    margin: 0.4em auto;
+    width: 100%;
+  }
+}
+
+.side-text {
+  color: var(--side-text);
+}
