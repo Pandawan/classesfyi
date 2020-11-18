@@ -1,18 +1,17 @@
 interface ApiSuccess {
   type: "success";
-  data: any;
+  result: any;
 }
 
 interface ApiError {
   type: "error";
-  message: string;
-  data?: any;
+  error: string;
 }
 
-export function createErrorResponse(message: string, data?: any): ApiError {
-  return { type: "error", message, data };
+export function createErrorResponse(message: string): ApiError {
+  return { type: "error", error: message };
 }
 
-export function createSuccessResponse(data: any): ApiSuccess {
-  return { type: "success", data };
+export function createSuccessResponse(result: any): ApiSuccess {
+  return { type: "success", result };
 }

@@ -59,8 +59,10 @@ export const registerClasses = functions.https.onRequest(
       .filter((potentialClass: any) => isClassData(potentialClass) === false);
     if (invalidClasses.length !== 0) {
       response.status(400).send(createErrorResponse(
-        `Classes must be objects in the format { campus: string, department: string, course: string, crn: number }`,
-        invalidClasses,
+        [
+          `Classes must be objects in the format { campus: string, department: string, course: string, crn: number }.`,
+          `Got: ${JSON.stringify(invalidClasses)}`,
+        ].join("\n"),
       ));
       return;
     }
@@ -116,7 +118,7 @@ export const registerClasses = functions.https.onRequest(
         createSuccessResponse("Successfully registered for classes."),
       );
     } else {
-      response.send(
+      response.status(500).send(
         createErrorResponse(
           "Something went wrong, there were no classes to register.",
         ),

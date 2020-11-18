@@ -42,8 +42,8 @@ export const getUserClasses = functions.https.onRequest(
       functions.logger.error(
         `User ${email} does not have a registered_classes field.`,
       );
-      // Recover from error by sending an empty list
-      response.send(createSuccessResponse([]));
+      // Recover from error by sending null
+      response.send(createSuccessResponse(null));
       return;
     }
 
@@ -83,6 +83,13 @@ export const getUserClasses = functions.https.onRequest(
 
     const classesWithData = await Promise.all(tasks);
 
-    response.send(createSuccessResponse(classesWithData));
+    const cleanedUpData = classesWithData.map((data) => {
+      if (data && data.previous_data) {
+        delete data.previous_data;
+      }
+      return data;
+    });
+
+    response.send(createSuccessResponse(cleanedUpData));
   },
 );

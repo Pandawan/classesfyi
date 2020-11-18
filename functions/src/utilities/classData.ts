@@ -7,7 +7,7 @@ export interface ClassData {
   previous_data?: {
     seats: number;
     waitlist_seats: number;
-    status: "open" | "full" | "waitlist";
+    status: "open" | "full" | "waitlist" | "unknown";
   };
 }
 
@@ -17,10 +17,10 @@ export interface ClassData {
  */
 export function isClassData(c: any): c is ClassData {
   return (
-    typeof c === "object" ||
-    typeof c.campus === "string" ||
-    typeof c.department === "string" ||
-    typeof c.course === "string" ||
+    typeof c === "object" &&
+    typeof c.campus === "string" &&
+    typeof c.department === "string" &&
+    typeof c.course === "string" &&
     typeof c.crn === "number"
   );
 }
