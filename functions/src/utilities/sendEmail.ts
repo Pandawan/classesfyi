@@ -1,9 +1,10 @@
+import * as functions from "firebase-functions";
 import * as sendgrid from "@sendgrid/mail";
 import * as handlebars from "handlebars";
 import { promises as fs } from "fs";
 
 sendgrid.setApiKey(
-  "functions.config().sendgrid.key",
+  functions.config().sendgrid.key,
 );
 
 interface EmailData {
@@ -42,21 +43,5 @@ export async function sendEmail(data: EmailData) {
     to: { email: data.email },
     subject: "Classes.fyi: Updates about your classes",
     content: [{ type: "text/html", value: content }],
-    /*
-    templateId: "d-39782d05cc364689bc75812ce7d7e4ed",
-    dynamicTemplateData: {
-      "email": "migueldelatour@gmail.com",
-      "classNames": "Your favorite class",
-      "classesData": {
-        "De Anza": [
-          {
-            "name": "Math 22",
-            "crn": 25313,
-            "changes": ["Class now has 1 seat available"],
-          },
-        ],
-      },
-    },
-    */
   });
 }

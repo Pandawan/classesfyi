@@ -7,6 +7,7 @@ Get updates when your classes's seats open up.
 - Move update function to use batch request
 - Improve class schedule rendering
 - Cleanup lot of vue components
+- Make textbox's font bigger on mobile so the view doesn't zoom in
 
 ## Frontend
 
