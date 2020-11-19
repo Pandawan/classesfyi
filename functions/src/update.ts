@@ -83,33 +83,66 @@ async function sendEmailWithChanges(
 ): Promise<EmailReport> {
   const formattedClassesWithChanges = classesWithChanges.map((
     classWithChanges,
-  ) => ({
-    name: `${classWithChanges.department} ${classWithChanges.course}`
-      .toUpperCase(),
-    crn: classWithChanges.crn,
-    campus: classWithChanges.campus,
-    changes: classWithChanges.changes
-      .map((change) => {
-        if (change.type === "seats") {
-          if (change.updated === 1) {
-            return `There is 1 seat available (was ${change.previous})`;
+  ) => {
+    // TODO: Represent changes as a map rather than an array, this would make it easier to find specific changes
+    // Special case if seat > 0 & waitlist = 0 & class open
+    // This means a waitlist seat is about to open up
+    if (
+      classWithChanges.changes.findIndex((change) =>
+          change.type === "seats" && change.updated > 0
+        ) !== -1 &&
+      classWithChanges.changes.findIndex((change) =>
+          change.type === "waitlist_seats" && change.updated === 0
+        ) !== -1 &&
+      classWithChanges.changes.findIndex((change) =>
+          change.type === "status" && change.updated === "open"
+        ) !== -1
+    ) {
+      const seatChange = classWithChanges.changes.find((change) =>
+        change.type === "seats" && change.updated > 0
+      );
+
+      return {
+        name: `${classWithChanges.department} ${classWithChanges.course}`
+          .toUpperCase(),
+        crn: classWithChanges.crn,
+        campus: classWithChanges.campus,
+        changes: [
+          `${seatChange?.updated ??
+            "A"} seat is about to open up in the waitlist (within the next hour).`,
+        ],
+      };
+    }
+
+    // Otherwise return a report of all the changes
+    return {
+      name: `${classWithChanges.department} ${classWithChanges.course}`
+        .toUpperCase(),
+      crn: classWithChanges.crn,
+      campus: classWithChanges.campus,
+      changes: classWithChanges.changes
+        .map((change) => {
+          if (change.type === "seats") {
+            if (change.updated === 1) {
+              return `There is 1 seat available (was ${change.previous})`;
+            } else {
+              return `There are ${change.updated} seats available (was ${change.previous})`;
+            }
+          } else if (change.type === "status") {
+            return `Class status is now ${change.updated} (was ${change.previous}).`;
+          } else if (change.type === "waitlist_seats") {
+            if (change.updated === 1) {
+              return `There is 1 waitlist seat available (was ${change.previous})`;
+            } else {
+              return `There are ${change.updated} waitlist seats available (was ${change.previous})`;
+            }
           } else {
-            return `There are ${change.updated} seats available (was ${change.previous})`;
+            return undefined;
           }
-        } else if (change.type === "status") {
-          return `Class status is now ${change.updated} (was ${change.previous}).`;
-        } else if (change.type === "waitlist_seats") {
-          if (change.updated === 1) {
-            return `There is 1 waitlist seat available (was ${change.previous})`;
-          } else {
-            return `There are ${change.updated} waitlist seats available (was ${change.previous})`;
-          }
-        } else {
-          return undefined;
-        }
-      })
-      .filter((formattedChange) => formattedChange !== undefined) as string[],
-  }));
+        })
+        .filter((formattedChange) => formattedChange !== undefined) as string[],
+    };
+  });
 
   const response = await sendEmail({
     email,

@@ -5,6 +5,16 @@
     </h2>
     <div class="tags">
       <Tag
+        v-if="
+          classData.seats > 0 &&
+          classData.wait_seats === 0 &&
+          classData.status === 'open'
+        "
+        color="yellow"
+        >{{ classData.seats }} seat is opening up</Tag
+      >
+      <Tag
+        v-else
         :color="
           { open: 'green', waitlist: 'yellow', full: 'red', unknown: 'yellow' }[
             classData['status']
@@ -26,10 +36,12 @@
       <div v-if="classData.seats !== 0">
         Available seats: {{ classData.seats }}
       </div>
-      <div v-else-if="classData.wait_seats !== 0">
+      <div v-if="classData.wait_seats !== 0">
         Available waitlist seats: {{ classData.wait_seats }}
       </div>
-      <div v-else>No open or waitlist seats available.</div>
+      <div v-if="classData.seats === 0 && classData.wait_seats === 0">
+        No open or waitlist seats available.
+      </div>
       <slot :classData="classData"></slot>
     </div>
     <div>Duration: {{ classData.start }} - {{ classData.end }}</div>
