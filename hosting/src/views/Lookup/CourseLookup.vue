@@ -37,7 +37,7 @@
     >
       <div class="class">
         <ClassView :classData="classInfo">
-          <div v-if="classInfo.seats === 0 && classInfo.wait_seats === 0">
+          <div v-if="classInfo.wait_seats === 0">
             <RegisterButton :classInfo="classInfo" />
           </div>
         </ClassView>
