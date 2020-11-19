@@ -95,6 +95,7 @@ select {
   border-radius: 0.12em;
   box-sizing: border-box;
   text-decoration: none;
+  font-size: 1.15rem;
   font-weight: 300;
   color: var(--text);
   transition: all 0.2s;
