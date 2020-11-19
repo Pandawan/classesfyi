@@ -4,7 +4,7 @@ import * as handlebars from "handlebars";
 import { promises as fs } from "fs";
 
 sendgrid.setApiKey(
-  functions.config().sendgrid.key,
+  functions.config()?.sendgrid?.key ?? "",
 );
 
 interface EmailData {

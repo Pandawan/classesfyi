@@ -6,6 +6,11 @@ import { ClassData, isClassData } from "./utilities/classData";
 import { groupBy } from "./utilities/groupBy";
 import { sendEmail } from "./utilities/sendEmail";
 
+export const test = functions.https.onRequest(async (req, res) => {
+  console.log(await updateClassesData.run(undefined, undefined));
+  res.send();
+});
+
 /**
  * Register the given user for updates from the given classes.
  * 
@@ -135,7 +140,18 @@ export interface ClassDataWithChanges extends ClassData {
 }
 
 async function getClassesWithImportantChanges() {
-  const classesCollection = (await store.collection("classes").get()).docs;
+  const classesCollection = (await store.collection("classes").get()).docs
+    // Remove any snapshot that contains invalid class data
+    .filter((snapshot) => {
+      if (isClassData(snapshot.data()) === false) {
+        functions.logger.error(
+          `Classes database contains invalid class data`,
+          snapshot.data(),
+        );
+        return false;
+      }
+      return true;
+    });
 
   // A mapping of class reference and the changes since the previous update
   const classesChanges: [
@@ -143,49 +159,77 @@ async function getClassesWithImportantChanges() {
     ClassDataWithChanges,
   ][] = [];
 
-  for (const classSnapshot of classesCollection) {
-    const possibleClassData = classSnapshot.data();
-    if (isClassData(possibleClassData) === false) {
-      functions.logger.error(
-        `Classes database contains invalid class data`,
-        possibleClassData,
-      );
-      break;
-    }
+  const currentClassSnapshotsByCampus = groupBy(
+    classesCollection,
+    (snapshot) => snapshot.data().campus,
+  );
 
-    const classData = possibleClassData as ClassData;
-
-    // Get updated class data from OpenCourseAPI
-    const updatedClassData = await getUpdatedClassData(
-      classData.campus,
-      classData.crn,
+  // TODO: this could be optimized by storing classes by CRN in a map rather than as an array
+  for (
+    const [campus, classSnapshots] of Object.entries(
+      currentClassSnapshotsByCampus,
+    )
+  ) {
+    // Get all the data for that given campus
+    const updatedClassesData = await getUpdatedClassesData(
+      campus,
+      classSnapshots.map((snapshot) => snapshot.data() as ClassData),
     );
 
-    // Could not find class in OpenCourseAPI
-    if (updatedClassData === null) {
-      // TODO: Delete class & remove all refs from users
+    if (updatedClassesData === null) {
+      functions.logger.error("No data found for campus", campus);
       break;
     }
 
-    // Get a list of important changes
-    const importantChanges = getImportantChanges(classData, updatedClassData);
-    if (importantChanges.length !== 0) {
-      const classDataWithChanges = {
-        ...classData,
-        changes: importantChanges,
-      };
-      // If there were important changes, add them to the complete list for all classes
-      classesChanges.push([classSnapshot.ref, classDataWithChanges]);
-    }
+    // Loop through all classes
+    for (const updatedClassDataResponse of updatedClassesData) {
+      if (updatedClassDataResponse.status === "error") {
+        functions.logger.error(
+          "Encountered an error while fetching updated class data for a specific class",
+          updatedClassDataResponse.error,
+        );
+        break;
+      }
 
-    // Update class's firestore data with new data from OpenCourseAPI
-    await classSnapshot.ref.update({
-      previous_data: {
-        seats: updatedClassData.seats,
-        waitlist_seats: updatedClassData.wait_seats,
-        status: updatedClassData.status,
-      },
-    });
+      const updatedClassData = updatedClassDataResponse.data;
+
+      // Find the class pair that matches with the updated class data
+      const matchedClassSnapshot = classSnapshots.find((snapshot) =>
+        snapshot.data().crn === updatedClassData.CRN
+      );
+      if (matchedClassSnapshot === undefined) {
+        functions.logger.error(
+          "Could not match updated class data with current class data",
+          updatedClassData,
+        );
+        break;
+      }
+
+      const matchedClassData = matchedClassSnapshot.data() as ClassData;
+
+      // Get a list of important changes
+      const importantChanges = getImportantChanges(
+        matchedClassData,
+        updatedClassData,
+      );
+      if (importantChanges.length !== 0) {
+        const classDataWithChanges = {
+          ...matchedClassData,
+          changes: importantChanges,
+        };
+        // If there were important changes, add them to the complete list for all classes
+        classesChanges.push([matchedClassSnapshot.ref, classDataWithChanges]);
+      }
+
+      // Update class's firestore data with new data from OpenCourseAPI
+      await matchedClassSnapshot.ref.update({
+        previous_data: {
+          seats: updatedClassData.seats,
+          waitlist_seats: updatedClassData.wait_seats,
+          status: updatedClassData.status,
+        },
+      });
+    }
   }
 
   return classesChanges;
@@ -279,33 +323,21 @@ interface OpenCourseClassData {
   }[];
 }
 
-/**
- * Get the latest class data from OpenCourseAPI for a given class.
- * @param campus The campus the class is in.
- * @param crn The CRN of the class.
- */
-async function getUpdatedClassData(
+async function getUpdatedClassesData(
   campus: string,
-  crn: number,
-): Promise<OpenCourseClassData | null>;
-async function getUpdatedClassData(
-  campus: string,
-  crn: number,
-  year: number,
-  quarter: "summer" | "fall" | "winter" | "spring",
-): Promise<OpenCourseClassData | null>;
-async function getUpdatedClassData(
-  campus: string,
-  crn: number,
+  classes: ClassData[],
   year?: number,
   quarter?: "summer" | "fall" | "winter" | "spring",
-): Promise<OpenCourseClassData | null> {
-  const response = await got(
-    `https://opencourse.dev/${campus}/classes/${crn}` +
+) {
+  const response = await got.post(
+    `https://opencourse.dev/${campus}/classes` +
       (year !== undefined && quarter !== undefined
         ? `?year=${year}&quarter=${quarter}`
         : ""),
     {
+      json: {
+        resources: classes.map((classData) => ({ CRN: classData.crn })),
+      },
       responseType: "json",
     },
   );
@@ -318,7 +350,10 @@ async function getUpdatedClassData(
     return null;
   }
 
-  if (response.body === undefined || (response.body as any)?.CRN !== crn) {
+  if (
+    response.body === undefined ||
+    Array.isArray((response.body as any)?.resources) === false
+  ) {
     functions.logger.error(
       `Received invalid class data from OpenCourseAPI:`,
       response.body,
@@ -326,5 +361,11 @@ async function getUpdatedClassData(
     return null;
   }
 
-  return response.body as OpenCourseClassData;
+  return (response.body as any).resources as ({
+    status: "success";
+    data: OpenCourseClassData;
+  } | {
+    status: "error";
+    error: string;
+  })[];
 }
