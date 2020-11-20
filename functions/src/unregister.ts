@@ -2,7 +2,11 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 import { store } from "./index";
-import { ClassData, isClassData } from "./utilities/classData";
+import {
+  ClassData,
+  cleanupClassData,
+  isClassData,
+} from "./utilities/classData";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -69,7 +73,9 @@ export const unregisterClasses = functions.https.onRequest(
       return;
     }
 
-    const classesToLookFor: ClassData[] = potentialClassList;
+    const classesToLookFor: ClassData[] = potentialClassList
+      // Clean up the data for database usage
+      .map((classData: ClassData) => cleanupClassData(classData, false));
     const classesToRemoveFromUser: FirebaseFirestore.DocumentReference[] = [];
 
     if (

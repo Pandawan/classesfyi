@@ -4,10 +4,14 @@ Get updates when your classes's seats open up.
 
 ## TODO
 
+- Only store CRN, term, and campus in database instead of current setup
 - Move update function to use batch request
 - Improve class schedule rendering
 - Cleanup lot of vue components
-- Make textbox's font bigger on mobile so the view doesn't zoom in
+- Better searching
+- Use [firebase email sign in](https://firebase.google.com/docs/auth/web/email-link-auth) with major overhaul
+  - Requires changing a lot of code to support user authentication on frontend
+  - Could flip things around and make the client send the class registration request directly to the database instead of using a function (this would limit the number of function calls made and probably be faster)
 
 ## Frontend
 

@@ -2,7 +2,11 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 import { store } from "./index";
-import { ClassData, isClassData } from "./utilities/classData";
+import {
+  ClassData,
+  cleanupClassData,
+  isClassData,
+} from "./utilities/classData";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -67,7 +71,10 @@ export const registerClasses = functions.https.onRequest(
       return;
     }
 
-    const classesToLookFor: ClassData[] = potentialClassList;
+    // Make a list of classes to look for
+    const classesToLookFor: ClassData[] = potentialClassList
+      // Clean up the data for database usage
+      .map((classData: ClassData) => cleanupClassData(classData, false));
     const classesToAddToUser: FirebaseFirestore.DocumentReference[] = [];
 
     // Loop through user given list of classes

@@ -17,13 +17,14 @@
 <script lang="ts">
 import { emailStore } from "../stores/email";
 import { defineComponent, PropType, ref } from "vue";
-import { ShortClassInfo, unregisterForClass } from "../utilities/classesFyiApi";
+import { unregisterForClass } from "../utilities/classesFyiApi";
+import { ClassInfo } from "../utilities/openCourseApi";
 
 export default defineComponent({
   name: "UnregisterButton",
   props: {
     classInfo: {
-      type: Object as PropType<ShortClassInfo>,
+      type: Object as PropType<ClassInfo>,
       required: true,
     },
     email: {
@@ -43,7 +44,7 @@ export default defineComponent({
         campus: props.classInfo.campus,
         department: props.classInfo.department,
         course: props.classInfo.course,
-        crn: props.classInfo.crn,
+        crn: props.classInfo.CRN,
       });
 
       if (result !== null) {

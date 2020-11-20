@@ -24,3 +24,27 @@ export function isClassData(c: any): c is ClassData {
     typeof c.crn === "number"
   );
 }
+
+/**
+ * Clean up and format the Class Data to an appropriate state for database
+ * @param c Class Data to cleanup
+ * @param withPreviousData Whether or not to include the previous data property
+ */
+export function cleanupClassData(
+  c: ClassData,
+  withPreviousData: boolean,
+): ClassData {
+  return {
+    campus: c.campus.toLowerCase(),
+    department: c.department.toLowerCase(),
+    course: c.course.toLowerCase(),
+    crn: c.crn,
+    previous_data: (withPreviousData && c.previous_data
+      ? {
+        seats: c.previous_data.seats,
+        waitlist_seats: c.previous_data.waitlist_seats,
+        status: c.previous_data.status,
+      }
+      : undefined),
+  };
+}

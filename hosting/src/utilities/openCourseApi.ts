@@ -213,3 +213,69 @@ export async function getClassInfo(
     return [new APIError(res.status, error), null];
   }
 }
+
+/**
+ * Get info about all the classes in the CRN list.
+ * @param campusId Campus id
+ * @param CRNs List of CRNs to look for
+ */
+export async function getClassesInfo(
+  campusId: CampusId,
+  CRNs: number[],
+): Promise<
+  [APIError, null] | [
+    null,
+    Array<
+      | { status: "success"; data: ClassInfo }
+      | { status: "error"; error: string }
+    >,
+  ]
+> {
+  const res = await fetch(
+    `https://opencourse.dev/${campusId}/classes/`,
+    {
+      method: "post",
+      body: JSON.stringify({
+        resources: CRNs.map((crn) => ({
+          CRN: crn,
+        })),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (res.status === 200) {
+    const response = await res.json();
+
+    if (
+      response?.resources === undefined ||
+      Array.isArray(response.resources) === false
+    ) {
+      return [new APIError(res.status, "No resources found"), null];
+    }
+
+    return [
+      null,
+      response.resources.map((classResult) => {
+        if (classResult.status === "error" || classResult.data === null) {
+          return classResult;
+        }
+
+        const classInfo = {
+          ...classResult.data,
+          department: classResult.data.dept,
+          campus: campusId.toLowerCase(),
+        };
+        return {
+          ...classResult,
+          data: classInfo,
+        };
+      }),
+    ];
+  } else {
+    const error = (await res.json()).error;
+    return [new APIError(res.status, error), null];
+  }
+}

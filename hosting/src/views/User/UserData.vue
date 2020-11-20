@@ -13,19 +13,22 @@
         v-on:success="getClasses"
       />
     </div>
+    <div v-if="classesError !== null">
+      <p>{{ classesError }}</p>
+    </div>
     <SearchableList
       v-if="possibleClasses !== null"
       placeholder="Search..."
       :items="possibleClasses"
-      v-slot="{ item: [shortClassInfo, [error, classInfo]] }"
+      v-slot="{ item: { status, error, data: classInfo } }"
       :filter="
-        ([shortClassInfo, [error, classInfo]], query) => {
+        ({ status, error, data: classInfo }, query) => {
           // Run a basic query on short class info
           shouldAppear =
-            `${shortClassInfo.department} ${shortClassInfo.course} ${shortClassInfo.department}${shortClassInfo.course} ${shortClassInfo.CRN}`
+            `${classInfo.department} ${classInfo.course} ${classInfo.department}${classInfo.course} ${classInfo.CRN}`
               .toLowerCase()
               .indexOf(query.toLowerCase()) != -1;
-          if (error === null) {
+          if (status === 'success' && error === null) {
             // Search by instructor name
             shouldAppear =
               shouldAppear ||
@@ -40,23 +43,24 @@
         }
       "
     >
-      <div v-if="error === null && classInfo !== null" class="class">
-        <ClassView :classData="classInfo">
-          <UnregisterButton :classInfo="shortClassInfo" :email="email" />
+      <div v-if="status === 'success' && classInfo !== null" class="class">
+        <ClassView :classData="classInfo" :key="classInfo.raw_course">
+          <UnregisterButton :classInfo="classInfo" :email="email" />
         </ClassView>
       </div>
-      <div v-else-if="error !== null">
-        <p>
-          Error loading {{ shortClassInfo.campus.toUpperCase() }}
-          {{ shortClassInfo.department }}{{ shortClassInfo.course }}
-          {{ shortClassInfo.CRN }}
-        </p>
-        <p>{{ error }}</p>
-      </div>
+      <p v-else-if="status === 'error' && error !== null" class="error">
+        <span v-if="classInfo !== null">
+          <!-- TODO: This dual CRN thing is ugly -->
+          Error loading
+          {{
+            `${classInfo.campus.toUpperCase()} ${classInfo.department.toUpperCase()}${classInfo.course.toUpperCase()} ${
+              classInfo.CRN ?? classInfo.crn
+            }: `
+          }}
+        </span>
+        <span>{{ error }}</span>
+      </p>
     </SearchableList>
-    <div v-if="classesError !== null">
-      <p>{{ classesError }}</p>
-    </div>
   </section>
 </template>
 
@@ -65,12 +69,14 @@ import { computed, defineComponent, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { getUserClasses, ShortClassInfo } from "../../utilities/classesFyiApi";
 import SearchableList from "../../components/SearchableList.vue";
-import { getClassInfo, ClassInfo } from "../../utilities/openCourseApi";
+import { ClassInfo, getClassesInfo } from "../../utilities/openCourseApi";
 import { APIError } from "../../utilities/APIError";
+import { groupBy } from "../../utilities/groupBy";
 import ClassView from "../../components/ClassView.vue";
 import UnregisterButton from "../../components/UnregisterButton.vue";
 import UnregisterAllButton from "../../components/UnregisterAllButton.vue";
 import BackButton from "../../components/BackButton.vue";
+import { CampusId } from "../../utilities/campus";
 
 export default defineComponent({
   name: "UserData",
@@ -86,7 +92,18 @@ export default defineComponent({
     const email = computed(() => route.params.email as string);
 
     const possibleClasses = ref<
-      [ShortClassInfo, [APIError, null] | [null, ClassInfo]][] | null
+      | (
+          | {
+              status: "success";
+              data: ClassInfo;
+            }
+          | {
+              status: "error";
+              error: string;
+              data: ShortClassInfo;
+            }
+        )[]
+      | null
     >(null);
     const classesError = ref<string | null>(null);
 
@@ -94,16 +111,74 @@ export default defineComponent({
       const [apiError, result] = await getUserClasses(email.value);
 
       if (result !== null) {
-        const tasks = result.map(async (shortClassInfo) => {
-          return [
-            shortClassInfo,
-            await getClassInfo(shortClassInfo.campus, shortClassInfo.crn),
-          ] as [ShortClassInfo, [APIError, null] | [null, ClassInfo]];
-        });
-        const classInfos = await Promise.all(tasks);
+        const crnsByCampus = groupBy(
+          result,
+          (shortClassInfo) => shortClassInfo.campus
+        );
+        const tasks = Object.entries(crnsByCampus).map(
+          async ([campus, shortClassesInfo]) => {
+            const CRNs = shortClassesInfo.map(
+              (shortClassInfo) => shortClassInfo.crn
+            );
+            return {
+              campus,
+              result: await getClassesInfo(campus as CampusId, CRNs),
+            };
+          }
+        );
 
-        possibleClasses.value = classInfos;
-        classesError.value = null;
+        const classInfoResultsByCampus = await Promise.all(tasks);
+
+        const campusErrors = [];
+        let mergedClassInfos: (
+          | {
+              status: "success";
+              data: ClassInfo;
+            }
+          | {
+              status: "error";
+              error: string;
+              data: ShortClassInfo;
+            }
+        )[] = [];
+        // Loop through each campus and report errors or concat with classInfos
+        for (const {
+          campus,
+          result: [campusError, campusResults],
+        } of classInfoResultsByCampus) {
+          if (campusError !== null) {
+            campusErrors.push(
+              `Something went wrong, please try again. ${campusError.toString()}`
+            );
+          } else {
+            const formattedResults = campusResults.map((result, index) => {
+              // OpenCourseAPI returns success but data: null when a request was valid but class was not found.
+              if (result.status === "success" && result.data === null) {
+                // HACK: Turn the result into an error
+                return {
+                  status: "error",
+                  error: "No class found with given CRN.",
+                  data: crnsByCampus[campus][index],
+                } as { status: "error"; error: string; data: ShortClassInfo };
+              }
+
+              if (result.status === "success") return result;
+
+              return {
+                ...result,
+                // If there was an error, put the short class info to identify which class this was
+                // Because OpenCourseAPI doesn't specify which request failed
+                data: crnsByCampus[campus][index] as ShortClassInfo,
+              };
+            });
+
+            mergedClassInfos = mergedClassInfos.concat(formattedResults);
+          }
+        }
+
+        possibleClasses.value = mergedClassInfos;
+        classesError.value =
+          campusErrors.length !== 0 ? campusErrors.join("\n") : null;
       } else if (apiError !== null && apiError.code !== 404) {
         classesError.value = `Something went wrong, please try again. ${apiError.toString()}`;
         possibleClasses.value = null;
