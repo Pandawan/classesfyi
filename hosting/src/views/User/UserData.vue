@@ -3,7 +3,8 @@
     <BackButton />
     <span>User {{ email }}</span>
   </h2>
-  <section>
+  <p v-if="state === 'loading'">Loading...</p>
+  <section v-else-if="state === 'loaded'">
     <div class="header">
       <h3>Currently Registered Classes</h3>
       <UnregisterAllButton
@@ -90,6 +91,7 @@ export default defineComponent({
   setup(props) {
     const route = useRoute();
     const email = computed(() => route.params.email as string);
+    const state = ref<"loading" | "loaded">("loading");
 
     const possibleClasses = ref<
       | (
@@ -176,13 +178,16 @@ export default defineComponent({
           }
         }
 
+        state.value = "loaded";
         possibleClasses.value = mergedClassInfos;
         classesError.value =
           campusErrors.length !== 0 ? campusErrors.join("\n") : null;
       } else if (apiError !== null && apiError.code !== 404) {
+        state.value = "loaded";
         classesError.value = `Something went wrong, please try again. ${apiError.toString()}`;
         possibleClasses.value = null;
       } else {
+        state.value = "loaded";
         classesError.value = `No classes found for user.`;
         possibleClasses.value = null;
       }
@@ -190,7 +195,7 @@ export default defineComponent({
 
     onMounted(getClasses);
 
-    return { email, possibleClasses, classesError, getClasses };
+    return { email, possibleClasses, classesError, getClasses, state };
   },
 });
 </script>

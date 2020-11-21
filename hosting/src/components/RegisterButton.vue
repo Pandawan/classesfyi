@@ -22,6 +22,7 @@
       </form>
       <div v-if="error" class="error-message">{{ error.toString() }}</div>
     </div>
+    <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success-message">
       Successfully registered for updates.
     </div>
@@ -43,7 +44,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const state = ref<"initial" | "active" | "success">("initial");
+    const state = ref<"initial" | "active" | "loading" | "success">("initial");
     const input = ref<string>(emailStore.state.email ?? "");
     const error = ref<string | null>(null);
 
@@ -54,6 +55,7 @@ export default defineComponent({
         return;
       }
       emailStore.setEmail(input.value);
+      state.value = "loading";
 
       const [apiError, result] = await registerForClass(input.value, {
         campus: props.classInfo.campus,
@@ -66,6 +68,7 @@ export default defineComponent({
         // TODO: Change API to return list of registered/duplicated classes so client can say when the user is already registered
         state.value = "success";
       } else {
+        state.value = "active";
         error.value = `Something went wrong, please try again. ${apiError.toString()}`;
       }
     };

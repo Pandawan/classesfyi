@@ -8,6 +8,7 @@
       Unregister From All Classes
     </button>
     <div v-if="error" class="error-message">{{ error.toString() }}</div>
+    <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success-message">
       Successfully unregistered.
     </div>
@@ -32,12 +33,14 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const state = ref<"initial" | "success">("initial");
+    const state = ref<"initial" | "loading" | "success">("initial");
     const input = ref<string>(emailStore.state.email ?? "");
     const error = ref<string | null>(null);
 
     const unregister = async () => {
       error.value = null;
+
+      state.value = "loading";
 
       const [apiError, result] = await unregisterFromAllClasses(props.email);
 
@@ -46,6 +49,7 @@ export default defineComponent({
         state.value = "success";
         emit("success");
       } else {
+        state.value = "initial";
         error.value = `Something went wrong, please try again. ${apiError.toString()}`;
       }
     };

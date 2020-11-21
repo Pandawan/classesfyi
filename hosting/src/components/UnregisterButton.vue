@@ -33,12 +33,14 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const state = ref<"initial" | "success">("initial");
+    const state = ref<"initial" | "loading" | "success">("initial");
     const input = ref<string>(emailStore.state.email ?? "");
     const error = ref<string | null>(null);
 
     const unregister = async () => {
       error.value = null;
+
+      state.value = "loading";
 
       const [apiError, result] = await unregisterForClass(props.email, {
         campus: props.classInfo.campus,
@@ -51,6 +53,7 @@ export default defineComponent({
         // TODO: Change API to return list of registered/duplicated classes so client can say when they were not registered
         state.value = "success";
       } else {
+        state.value = "initial";
         error.value = `Something went wrong, please try again. ${apiError.toString()}`;
       }
     };
