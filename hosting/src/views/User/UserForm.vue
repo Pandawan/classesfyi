@@ -38,13 +38,15 @@ export default defineComponent({
 
     const submit = async () => {
       error.value = null;
-      if (emailStore.validateEmail(input.value) === false) {
+      const potentialEmail = input.value.trim();
+
+      if (emailStore.validateEmail(potentialEmail) === false) {
         error.value = "Invalid email address";
         return;
       }
-      emailStore.setEmail(input.value);
+      emailStore.setEmail(potentialEmail);
 
-      router.push(`/user/${input.value}`);
+      router.push(`/user/${potentialEmail}`);
     };
 
     return { input, submit, error };

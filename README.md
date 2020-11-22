@@ -4,7 +4,6 @@ Get updates when your classes's seats open up.
 
 ## TODO
 
-- Move update function to use batch request
 - Store class terms in DB; make endpoints only require term & CRN; use additional class info from update when sending email
   - This reduces the amount of data I have to store and reduces the amount of parameters to look for in a DB query
 - Refactor frontend

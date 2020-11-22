@@ -18,9 +18,9 @@ export interface ClassData {
 export function isClassData(c: any): c is ClassData {
   return (
     typeof c === "object" &&
-    typeof c.campus === "string" &&
-    typeof c.department === "string" &&
-    typeof c.course === "string" &&
+    typeof c.campus === "string" && (c.campus !== "") &&
+    typeof c.department === "string" && (c.department !== "") &&
+    typeof c.course === "string" && (c.course !== "") &&
     typeof c.crn === "number"
   );
 }
@@ -35,9 +35,9 @@ export function cleanupClassData(
   withPreviousData: boolean,
 ): ClassData {
   return {
-    campus: c.campus.toLowerCase(),
-    department: c.department.toLowerCase(),
-    course: c.course.toLowerCase(),
+    campus: c.campus.trim().toLowerCase(),
+    department: c.department.trim().toLowerCase(),
+    course: c.course.trim().toLowerCase(),
     crn: c.crn,
     previous_data: (withPreviousData && c.previous_data
       ? {

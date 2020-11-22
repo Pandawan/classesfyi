@@ -50,14 +50,16 @@ export default defineComponent({
 
     const register = async () => {
       error.value = null;
-      if (emailStore.validateEmail(input.value) === false) {
+      const potentialEmail = input.value.trim();
+
+      if (emailStore.validateEmail(potentialEmail) === false) {
         error.value = "Invalid email address";
         return;
       }
-      emailStore.setEmail(input.value);
+      emailStore.setEmail(potentialEmail);
       state.value = "loading";
 
-      const [apiError, result] = await registerForClass(input.value, {
+      const [apiError, result] = await registerForClass(potentialEmail, {
         campus: props.classInfo.campus,
         department: props.classInfo.department,
         course: props.classInfo.course,

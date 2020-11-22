@@ -34,13 +34,19 @@ export default defineComponent({
   },
   setup(props) {
     const state = ref<"initial" | "loading" | "success">("initial");
-    const input = ref<string>(emailStore.state.email ?? "");
     const error = ref<string | null>(null);
 
     const unregister = async () => {
       error.value = null;
 
       state.value = "loading";
+
+      if (typeof props.email !== "string") {
+        state.value = "initial";
+        error.value =
+          "Could not find email address to unregister from, please reload and try again.";
+        return;
+      }
 
       const [apiError, result] = await unregisterForClass(props.email, {
         campus: props.classInfo.campus,
@@ -58,15 +64,12 @@ export default defineComponent({
       }
     };
 
-    return { state, input, error, unregister };
+    return { state, error, unregister };
   },
 });
 </script>
 
 <style>
-.error-input {
-  border-color: #ff7975;
-}
 .error-message {
   color: red;
 }

@@ -39,7 +39,7 @@ export default defineComponent({
     const searchQuery = ref<string>("");
 
     const filteredItems = computed(() =>
-      props.items.filter((item) => props.filter(item, searchQuery.value))
+      props.items.filter((item) => props.filter(item, searchQuery.value.trim()))
     );
 
     return { searchQuery, filteredItems };

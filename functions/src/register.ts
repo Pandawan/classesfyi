@@ -92,9 +92,9 @@ export const registerClasses = functions.https.onRequest(
         const newClassRef = store.collection("classes").doc();
         // Create that class
         await newClassRef.create({
-          campus: classToLookFor.campus.toLowerCase(),
-          department: classToLookFor.department.toLowerCase(),
-          course: classToLookFor.course.toLowerCase(),
+          campus: classToLookFor.campus,
+          department: classToLookFor.department,
+          course: classToLookFor.course,
           crn: classToLookFor.crn,
         });
         classesToAddToUser.push(newClassRef);
