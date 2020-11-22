@@ -3,9 +3,9 @@ import * as sendgrid from "@sendgrid/mail";
 import * as handlebars from "handlebars";
 import { promises as fs } from "fs";
 
-sendgrid.setApiKey(
-  functions.config()?.sendgrid?.key ?? "",
-);
+const apiKey = functions.config()?.sendgrid?.key;
+
+sendgrid.setApiKey(apiKey);
 
 interface EmailData {
   email: string;
@@ -35,13 +35,30 @@ async function formatEmail(data: EmailData): Promise<string> {
   return Promise.resolve(cachedTemplate(data));
 }
 
-export async function sendEmail(data: EmailData) {
+export async function sendEmail(
+  data: EmailData,
+): Promise<{ type: "success" } | { type: "error"; error: string }> {
   const content = await formatEmail(data);
 
-  return await sendgrid.send({
+  if (apiKey === undefined) {
+    return { type: "error", error: "SendGrid API key not found." };
+  }
+
+  const [response] = await sendgrid.send({
     from: { email: "help@classes.fyi" },
     to: { email: data.email },
     subject: "Classes.fyi: Updates about your classes",
     content: [{ type: "text/html", value: content }],
   });
+
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    return { type: "success" };
+  } else {
+    return {
+      type: "error",
+      error: typeof response.body === "string"
+        ? response.body
+        : JSON.stringify(response.body),
+    };
+  }
 }

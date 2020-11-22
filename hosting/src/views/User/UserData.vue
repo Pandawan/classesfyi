@@ -113,11 +113,11 @@ export default defineComponent({
       const [apiError, result] = await getUserClasses(email.value);
 
       if (result !== null) {
-        const crnsByCampus = groupBy(
+        const classesDataByCampus = groupBy(
           result,
           (shortClassInfo) => shortClassInfo.campus
         );
-        const tasks = Object.entries(crnsByCampus).map(
+        const tasks = Object.entries(classesDataByCampus).map(
           async ([campus, shortClassesInfo]) => {
             const CRNs = shortClassesInfo.map(
               (shortClassInfo) => shortClassInfo.crn
@@ -160,7 +160,7 @@ export default defineComponent({
                 return {
                   status: "error",
                   error: "No class found with given CRN.",
-                  data: crnsByCampus[campus][index],
+                  data: classesDataByCampus[campus][index],
                 } as { status: "error"; error: string; data: ShortClassInfo };
               }
 
@@ -170,7 +170,7 @@ export default defineComponent({
                 ...result,
                 // If there was an error, put the short class info to identify which class this was
                 // Because OpenCourseAPI doesn't specify which request failed
-                data: crnsByCampus[campus][index] as ShortClassInfo,
+                data: classesDataByCampus[campus][index] as ShortClassInfo,
               };
             });
 
