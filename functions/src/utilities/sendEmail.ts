@@ -1,11 +1,10 @@
 import * as functions from "firebase-functions";
-import * as sendgrid from "@sendgrid/mail";
+import * as MailGun from "mailgun-js";
 import * as handlebars from "handlebars";
 import { promises as fs } from "fs";
 
-const apiKey = functions.config()?.sendgrid?.key;
-
-sendgrid.setApiKey(apiKey);
+const apiKey = functions.config()?.mailgun?.key;
+const mailgun = MailGun({ apiKey, domain: "classes.fyi" });
 
 interface EmailData {
   email: string;
@@ -21,44 +20,58 @@ interface EmailData {
 const rootDir = process.cwd();
 
 // Cache the template so we don't have to compile it multiple times
-let cachedTemplate: handlebars.TemplateDelegate | null = null;
+let cachedHtmlTemplate: handlebars.TemplateDelegate | null = null;
+let cachedTextTemplate: handlebars.TemplateDelegate | null = null;
 
-async function formatEmail(data: EmailData): Promise<string> {
-  if (cachedTemplate === null) {
+async function formatHtmlEmail(data: EmailData): Promise<string> {
+  if (cachedHtmlTemplate === null) {
     const templateStr = await fs.readFile(
       `${rootDir}/templates/email.inline.hbs`,
       "utf8",
     );
-    cachedTemplate = handlebars.compile(templateStr);
+    cachedHtmlTemplate = handlebars.compile(templateStr);
   }
 
-  return Promise.resolve(cachedTemplate(data));
+  return Promise.resolve(cachedHtmlTemplate(data));
+}
+
+async function formatTextEmail(data: EmailData): Promise<string> {
+  if (cachedTextTemplate === null) {
+    const templateStr = await fs.readFile(
+      `${rootDir}/templates/email.text.hbs`,
+      "utf8",
+    );
+    cachedTextTemplate = handlebars.compile(templateStr);
+  }
+
+  return Promise.resolve(cachedTextTemplate(data));
 }
 
 export async function sendEmail(
   data: EmailData,
 ): Promise<{ type: "success" } | { type: "error"; error: string }> {
-  const content = await formatEmail(data);
+  const htmlContent = await formatHtmlEmail(data);
+  const textContent = await formatTextEmail(data);
 
   if (apiKey === undefined) {
     return { type: "error", error: "SendGrid API key not found." };
   }
 
-  const [response] = await sendgrid.send({
-    from: { email: "help@classes.fyi" },
-    to: { email: data.email },
-    subject: "Classes.fyi: Updates about your classes",
-    content: [{ type: "text/html", value: content }],
-  });
-
-  if (response.statusCode >= 200 && response.statusCode < 300) {
-    return { type: "success" };
-  } else {
+  try {
+    await mailgun.messages().send({
+      from: "Classes.fyi <help@classes.fyi>",
+      to: [data.email],
+      subject: "Classes.fyi: Updates about your classes",
+      text: textContent,
+      html: htmlContent,
+    });
+    return {
+      type: "success",
+    };
+  } catch (err) {
     return {
       type: "error",
-      error: typeof response.body === "string"
-        ? response.body
-        : JSON.stringify(response.body),
+      error: err,
     };
   }
 }

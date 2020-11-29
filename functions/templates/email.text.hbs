@@ -1,0 +1,28 @@
+***********
+Classes.fyi
+***********
+
+Hi there,
+There are updates about some of the classes you have registered for.
+
+Please note that you are not actually signed up for these classes, you are simply getting updates about their
+availability.
+
+{{#each classesData as | classes campus |}}
+
+{{ campus }}
+------------
+{{#each classes as | classData |}}
+
+Class: {{ classData.name }}
+CRN: {{ classData.crn }}
+Changes:
+{{#each classData.changes as | change |}}
+- {{change}}
+{{/each}}
+{{/each}}
+{{/each}}
+
+Classes.fyi
+help@classes.fyi
+Don't like these emails? Unsubscribe ( https://classes.fyi/user/{{email}} ).

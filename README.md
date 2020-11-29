@@ -10,7 +10,7 @@ Get updates when your classes's seats open up.
 - Improve class schedule rendering
 - Better frontend class searching
 - Add loading messages to lookup views; make loading only show up [if taking longer than 1s](https://www.smashingmagazine.com/2016/12/best-practices-for-animated-progress-indicators/)
-- Switch to Mailgun for sending emails
+- Add desktop browser notification support?
 - Use [firebase email sign in](https://firebase.google.com/docs/auth/web/email-link-auth) with major overhaul
   - Requires changing a lot of code to support user authentication on frontend
   - Could flip things around and make the client send the class registration request directly to the database instead of using a function (this would limit the number of function calls made and probably be faster)
@@ -32,30 +32,7 @@ Backend server uses Firebase Functions in Node 12 and [TypeScript](https://www.t
 
 ## Email Sending
 
-### SendGrid
-
-Emails are sent using the SendGrid.net API.
-
-This email sending is done through these DNS settings on Cloudflare:
-
-```dns
-TXT  classes.fyi  v=spf1 include:spf.improvmx.com ~all  Auto  DNS only
-
-MX  classes.fyi mx2.improvmx.com  20  Auto  DNS only
-
-MX  classes.fyi  mx1.improvmx.com  10  Auto  DNS only
-```
-
-### Improvmx
-
-Email forwarding is done with Improvmx.com.
-This allows all emails sent to \*@classes.fyi to be redirected to my own address.
-This also allows the sending of emails from my address as a @classes.fyi email address.
-
-### Gmail
-
-Email aliasing is done through Gmail.com.
-An app-password was created and was used to connect improvmx to gmail through [a linking process](https://improvmx.com/guides/send-emails-using-gmail/).
+Emails are rendered using Handlebars with two different templates (one for html and one for plain text). They are sent through [Mailgun](https://www.mailgun.com/).
 
 ## Credit
 
