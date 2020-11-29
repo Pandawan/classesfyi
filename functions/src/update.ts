@@ -151,6 +151,10 @@ async function sendEmailWithChanges(
   const response = await sendEmail({
     email,
     classesData: emailData,
+    campusNames: {
+      "da": "De Anza",
+      "fh": "Foothill",
+    },
   });
 
   return (response.type === "success")

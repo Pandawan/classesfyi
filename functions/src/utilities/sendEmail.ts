@@ -9,11 +9,14 @@ const mailgun = MailGun.client({ username: "api", key: apiKey });
 interface EmailData {
   email: string;
   classesData: {
-    [campusName: string]: {
+    [campusId: string]: {
       name: string;
       crn: number;
       changes: string[];
     }[];
+  };
+  campusNames: {
+    [campusId: string]: string;
   };
 }
 
