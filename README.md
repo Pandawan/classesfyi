@@ -10,10 +10,10 @@ Get updates when your classes's seats open up.
 - Improve class schedule rendering
 - Better frontend class searching
 - Add loading messages to lookup views; make loading only show up [if taking longer than 1s](https://www.smashingmagazine.com/2016/12/best-practices-for-animated-progress-indicators/)
-- Add desktop browser notification support?
 - Use [firebase email sign in](https://firebase.google.com/docs/auth/web/email-link-auth) with major overhaul
   - Requires changing a lot of code to support user authentication on frontend
   - Could flip things around and make the client send the class registration request directly to the database instead of using a function (this would limit the number of function calls made and probably be faster)
+- Add desktop browser notification support?
 
 ## Frontend
 
