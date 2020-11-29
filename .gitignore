@@ -1,3 +1,6 @@
+# Firebase Runtime Config (api keys)
+.runtimeconfig.json
+
 # VSCode Config
 .vscode
 

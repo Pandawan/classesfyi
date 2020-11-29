@@ -1,10 +1,10 @@
 import * as functions from "firebase-functions";
-import * as MailGun from "mailgun-js";
+import * as MailGun from "mailgun.js";
 import * as handlebars from "handlebars";
 import { promises as fs } from "fs";
 
 const apiKey = functions.config()?.mailgun?.key;
-const mailgun = MailGun({ apiKey, domain: "classes.fyi" });
+const mailgun = MailGun.client({ username: "api", key: apiKey });
 
 interface EmailData {
   email: string;
@@ -58,7 +58,7 @@ export async function sendEmail(
   }
 
   try {
-    await mailgun.messages().send({
+    await mailgun.messages.create("classes.fyi", {
       from: "Classes.fyi <help@classes.fyi>",
       to: [data.email],
       subject: "Classes.fyi: Updates about your classes",

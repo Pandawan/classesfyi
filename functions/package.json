@@ -19,10 +19,9 @@
     "firebase-functions": "^3.11.0",
     "got": "^11.8.0",
     "handlebars": "^4.7.6",
-    "mailgun-js": "^0.22.0"
+    "mailgun.js": "^2.0.1"
   },
   "devDependencies": {
-    "@types/mailgun-js": "^0.22.11",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
     "@typescript-eslint/parser": "^4.6.1",
     "eslint": "^7.13.0",

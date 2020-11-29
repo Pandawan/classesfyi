@@ -144,9 +144,13 @@ async function sendEmailWithChanges(
     };
   });
 
+  const emailData = groupBy(
+    formattedClassesWithChanges,
+    ((item) => item.campus),
+  );
   const response = await sendEmail({
     email,
-    classesData: groupBy(formattedClassesWithChanges, ((item) => item.campus)),
+    classesData: emailData,
   });
 
   return (response.type === "success")
