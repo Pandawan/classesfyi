@@ -8,6 +8,7 @@
       Unregister
     </button>
     <div v-if="error" class="error-message">{{ error.toString() }}</div>
+    <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success-message">
       Successfully unregistered.
     </div>

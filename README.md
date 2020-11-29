@@ -30,9 +30,15 @@ Backend server uses Firebase Functions in Node 12 and [TypeScript](https://www.t
 - POST `/unregisterClasses`: Unregister a specific email address from specific class updates.
 - POST `/unregisterAllClasses`: Unregister a specific email address from all updates (clearing it entirely from the database).
 
-## Email Sending
+## Email
+
+## Sending
 
 Emails are rendered using Handlebars with two different templates (one for html and one for plain text). They are sent through [Mailgun](https://www.mailgun.com/).
+
+## Receiving
+
+Email receiving & followup is done with a [Zoho mail](https://www.zoho.com/mail/) free account.
 
 ## Credit
 
