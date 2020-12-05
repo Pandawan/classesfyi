@@ -31,14 +31,14 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import SearchableList from "../../components/SearchableList.vue";
+import SearchableList from "/@/components/SearchableList.vue";
 import {
   getCampusDepartments,
   DepartmentInfo,
-} from "../../utilities/openCourseApi";
-import { APIError } from "../../utilities/APIError";
-import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
-import BackButton from "../../components/BackButton.vue";
+} from "/@/utilities/openCourseApi";
+import { APIError } from "/@/utilities/APIError";
+import { availableCampuses, isAvailableCampus } from "/@/utilities/campus";
+import BackButton from "/@/components/BackButton.vue";
 
 export default defineComponent({
   name: "Lookup",

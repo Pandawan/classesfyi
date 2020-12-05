@@ -5,11 +5,8 @@
         <router-link to="/">Classes.fyi</router-link>
       </h1>
       <ul class="links">
-        <li v-for="route in routes" :key="route.path">
-          <router-link :to="route.to" :class="{ active: isActive(route.to) }">
-            {{ route.text }}
-          </router-link>
-        </li>
+        <li><router-link to="/">Home</router-link></li>
+        <li><router-link to="/about">About</router-link></li>
       </ul>
     </nav>
     <p class="headline">Get updates when your classes's seats open up.</p>
@@ -21,16 +18,7 @@ import { computed, defineComponent } from "vue";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
-  setup() {
-    const routes = [
-      { to: "/", text: "Home" },
-      { to: "/about", text: "About" },
-    ];
-    const router = useRouter();
-    const activeRoute = computed(() => router.currentRoute.value.path);
-    const isActive = (path) => path === activeRoute.value;
-    return { isActive, routes };
-  },
+  name: "Navbar",
 });
 </script>
 

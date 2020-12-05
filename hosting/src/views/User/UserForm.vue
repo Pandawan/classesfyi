@@ -10,7 +10,7 @@
     <input
       id="email"
       v-model="input"
-      v-on:change="error = null"
+      @change="error = null"
       :class="`active-input ${error ? 'error-input' : ''}`"
       type="email"
       placeholder="Enter your email..."
@@ -23,8 +23,8 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
-import { emailStore } from "../../stores/email";
-import BackButton from "../../components/BackButton.vue";
+import { emailStore } from "/@/stores/email";
+import BackButton from "/@/components/BackButton.vue";
 
 export default defineComponent({
   name: "UnregisterForm",

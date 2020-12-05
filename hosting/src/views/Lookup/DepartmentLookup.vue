@@ -14,17 +14,8 @@
     <SearchableList
       placeholder="Search for a course..."
       :items="courses"
+      :filter="searchFilter"
       v-slot="{ item: course }"
-      :filter="
-        (item, query) => {
-          // Compute a queryString with possible combinations/ways for people to search to match as many as possible
-          return (
-            `${item.dept} ${item.course} ${item.dept}${item.course} ${item.title}`
-              .toLowerCase()
-              .indexOf(query.toLowerCase()) !== -1
-          );
-        }
-      "
     >
       <router-link :to="`/lookup/${campusId}/${departmentId}/${course.course}`">
         <div class="course">
@@ -43,15 +34,25 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import SearchableList from "../../components/SearchableList.vue";
+import SearchableList from "/@/components/SearchableList.vue";
 import {
   getCampusDepartments,
   getDepartmentCourses,
   getDepartmentInfo,
-} from "../../utilities/openCourseApi";
-import { APIError } from "../../utilities/APIError";
-import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
-import BackButton from "../../components/BackButton.vue";
+} from "/@/utilities/openCourseApi";
+import { APIError } from "/@/utilities/APIError";
+import { availableCampuses, isAvailableCampus } from "/@/utilities/campus";
+import BackButton from "/@/components/BackButton.vue";
+
+// TODO: Fuzzy search
+const searchFilter = (item, query) => {
+  // Compute a queryString with possible combinations/ways for people to search to match as many as possible
+  return (
+    `${item.dept} ${item.course} ${item.dept}${item.course} ${item.title}`
+      .toLowerCase()
+      .indexOf(query.toLowerCase()) !== -1
+  );
+};
 
 export default defineComponent({
   name: "Lookup",
@@ -117,6 +118,7 @@ export default defineComponent({
       departmentName,
       courses,
       error,
+      searchFilter,
     };
   },
 });

@@ -4,33 +4,13 @@
       {{ classData.department }}{{ classData.course }} ({{ classData.CRN }})
     </h2>
     <div class="tags">
-      <Tag
-        v-if="
-          classData.seats > 0 &&
-          classData.wait_seats === 0 &&
-          classData.status === 'open'
-        "
-        color="yellow"
-        >{{ classData.seats }} seat is opening up</Tag
-      >
-      <Tag
-        v-else
-        :color="
-          { open: 'green', waitlist: 'yellow', full: 'red', unknown: 'yellow' }[
-            classData['status']
-          ]
-        "
-        class="status-tag"
-        >{{ classData.status }}</Tag
-      >
-      <Tag
-        v-if="
-          classData.times.every((time) =>
-            time.location.toLowerCase().includes('online')
-          )
-        "
-        >Online</Tag
-      >
+      <Tag v-if="isOpeningUp" color="yellow">
+        {{ classData.seats }} seat is opening up
+      </Tag>
+      <Tag v-else :color="statusColors[classData['status']]" class="status-tag">
+        {{ classData.status }}
+      </Tag>
+      <Tag v-if="isOnline">Online</Tag>
     </div>
     <div class="seats">
       <div v-if="classData.seats !== 0">
@@ -46,77 +26,48 @@
     </div>
     <div>Duration: {{ classData.start }} - {{ classData.end }}</div>
     <div>Units: {{ classData.units }}</div>
-    <div>
-      Schedule:
-      <ul class="schedule-list">
-        <!--
-          Make this element a special Info element
-        <li
-          v-if="
-            classData.times.every(
-              (s) =>
-                s['days'] === 'TBA' &&
-                s['start_time'] === 'TBA' &&
-                s['end_time'] === 'TBA'
-            )
-          "
-        >
-          This class is fully online and asynchronous with no scheduled
-          meetings.
-        </li>
-        
-        <li
-          v-else-if="
-            classData.times.some(
-              (s) =>
-                s['days'] === 'TBA' &&
-                s['start_time'] === 'TBA' &&
-                s['end_time'] === 'TBA'
-            )
-          "
-        >
-          This class has some online asynchronous component.
-        </li>
-        -->
-        <li v-for="time in classData.times">
-          <!-- TODO: Have some kind of link/popup that shows the time schedule in a calendar/weekly planner view 
-            Or at least have it so hovering over time.days shows a list of all the full days?
-          -->
-          <div v-if="time.days !== 'TBA'">On {{ time.days }}</div>
-          <div v-if="time.start_time !== 'TBA' || time.end_time !== 'TBA'">
-            From {{ time.start_time }} to {{ time.end_time }}
-          </div>
-          <div
-            v-if="
-              time.days === 'TBA' &&
-              time.start_time === 'TBA' &&
-              time.end_time === 'TBA'
-            "
-          >
-            Asynchronous
-          </div>
-          <!-- TODO: Have a RateMyProfessor link -->
-          <div>{{ time.type }} with {{ time.instructor.join(", and") }}</div>
-        </li>
-      </ul>
-    </div>
+    <div>Schedule: <ClassSchedule :schedule="classData.times" /></div>
   </div>
 </template>
 
 <script lang="ts">
 import Tag from "./Tag.vue";
 import RegisterButton from "./RegisterButton.vue";
-import { PropType } from "vue";
+import { computed, PropType } from "vue";
 import { ClassInfo } from "../utilities/openCourseApi";
+import ClassSchedule from "./ClassSchedule.vue";
+
+const statusColors = {
+  open: "green",
+  waitlist: "yellow",
+  full: "red",
+  unknown: "yellow",
+};
 
 export default {
   name: "ClassView",
-  components: { Tag, RegisterButton },
+  components: { Tag, RegisterButton, ClassSchedule },
   props: {
     classData: {
       type: Object as PropType<ClassInfo>,
       required: true,
     },
+  },
+  setup(props) {
+    const isOpeningUp = computed(
+      () =>
+        props.classData.seats > 0 &&
+        props.classData.wait_seats === 0 &&
+        props.classData.status === "open"
+    );
+
+    const isOnline = computed(() =>
+      props.classData.times.every((time) =>
+        time.location.toLowerCase().includes("online")
+      )
+    );
+
+    return { isOpeningUp, isOnline, statusColors };
   },
 };
 </script>
@@ -156,16 +107,5 @@ export default {
   .seats {
     flex-direction: row;
   }
-}
-
-.schedule-list {
-  list-style: none;
-  margin: 0;
-}
-.schedule-list li {
-  margin-left: 0.25rem;
-  border-left: 2px solid grey;
-  padding-left: 1rem;
-  margin: 0.25rem;
 }
 </style>

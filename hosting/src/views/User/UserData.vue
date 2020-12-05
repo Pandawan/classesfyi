@@ -11,7 +11,7 @@
         v-if="possibleClasses !== null"
         class="unregister-button"
         :email="email"
-        v-on:success="getClasses"
+        @success="getClasses"
       />
     </div>
     <div v-if="classesError !== null">
@@ -21,28 +21,8 @@
       v-if="possibleClasses !== null"
       placeholder="Search..."
       :items="possibleClasses"
+      :filter="searchFilter"
       v-slot="{ item: { status, error, data: classInfo } }"
-      :filter="
-        ({ status, error, data: classInfo }, query) => {
-          // Run a basic query on short class info
-          shouldAppear =
-            `${classInfo.department} ${classInfo.course} ${classInfo.department}${classInfo.course} ${classInfo.CRN}`
-              .toLowerCase()
-              .indexOf(query.toLowerCase()) != -1;
-          if (status === 'success' && error === null) {
-            // Search by instructor name
-            shouldAppear =
-              shouldAppear ||
-              classInfo.times.some((classSchedule) =>
-                classSchedule.instructor.some(
-                  (instructor) =>
-                    instructor.toLowerCase().indexOf(query.toLowerCase()) != -1
-                )
-              );
-          }
-          return shouldAppear;
-        }
-      "
     >
       <div v-if="status === 'success' && classInfo !== null" class="class">
         <ClassView :classData="classInfo" :key="classInfo.raw_course">
@@ -68,16 +48,37 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { getUserClasses, ShortClassInfo } from "../../utilities/classesFyiApi";
-import SearchableList from "../../components/SearchableList.vue";
-import { ClassInfo, getClassesInfo } from "../../utilities/openCourseApi";
-import { APIError } from "../../utilities/APIError";
-import { groupBy } from "../../utilities/groupBy";
-import ClassView from "../../components/ClassView.vue";
-import UnregisterButton from "../../components/UnregisterButton.vue";
-import UnregisterAllButton from "../../components/UnregisterAllButton.vue";
-import BackButton from "../../components/BackButton.vue";
-import { CampusId } from "../../utilities/campus";
+import { getUserClasses, ShortClassInfo } from "/@/utilities/classesFyiApi";
+import SearchableList from "/@/components/SearchableList.vue";
+import { ClassInfo, getClassesInfo } from "/@/utilities/openCourseApi";
+import { APIError } from "/@/utilities/APIError";
+import { groupBy } from "/@/utilities/groupBy";
+import ClassView from "/@/components/ClassView.vue";
+import UnregisterButton from "/@/components/UnregisterButton.vue";
+import UnregisterAllButton from "/@/components/UnregisterAllButton.vue";
+import BackButton from "/@/components/BackButton.vue";
+import { CampusId } from "/@/utilities/campus";
+
+// TODO: Clean this up
+const searchFilter = ({ status, error, data: classInfo }, query) => {
+  // Run a basic query on short class info
+  let shouldAppear =
+    `${classInfo.department} ${classInfo.course} ${classInfo.department}${classInfo.course} ${classInfo.CRN}`
+      .toLowerCase()
+      .indexOf(query.toLowerCase()) != -1;
+  if (status === "success" && error === null) {
+    // Search by instructor name
+    shouldAppear =
+      shouldAppear ||
+      classInfo.times.some((classSchedule) =>
+        classSchedule.instructor.some(
+          (instructor) =>
+            instructor.toLowerCase().indexOf(query.toLowerCase()) != -1
+        )
+      );
+  }
+  return shouldAppear;
+};
 
 export default defineComponent({
   name: "UserData",
@@ -89,6 +90,7 @@ export default defineComponent({
     BackButton,
   },
   setup(props) {
+    // TODO: Cleanup
     const route = useRoute();
     const email = computed(() => route.params.email as string);
     const state = ref<"loading" | "loaded">("loading");
@@ -195,7 +197,14 @@ export default defineComponent({
 
     onMounted(getClasses);
 
-    return { email, possibleClasses, classesError, getClasses, state };
+    return {
+      email,
+      possibleClasses,
+      classesError,
+      getClasses,
+      state,
+      searchFilter,
+    };
   },
 });
 </script>

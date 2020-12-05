@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import BackButton from "../components/BackButton.vue";
+import BackButton from "/@/components/BackButton.vue";
 
 export default defineComponent({
   name: "About",

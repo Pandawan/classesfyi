@@ -18,22 +18,8 @@
     <SearchableList
       placeholder="Search by CRN or instructor..."
       :items="classes"
+      :filter="searchFilter"
       v-slot="{ item: classInfo }"
-      :filter="
-        (item, query) => {
-          // Search by CRN or instructor name
-          return (
-            item.CRN.toString().toLowerCase().indexOf(query.toLowerCase()) !=
-              -1 ||
-            item.times.some((classSchedule) =>
-              classSchedule.instructor.some(
-                (instructor) =>
-                  instructor.toLowerCase().indexOf(query.toLowerCase()) != -1
-              )
-            )
-          );
-        }
-      "
     >
       <div class="class">
         <ClassView :classData="classInfo">
@@ -52,8 +38,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import SearchableList from "../../components/SearchableList.vue";
-import ClassView from "../../components/ClassView.vue";
+import SearchableList from "/@/components/SearchableList.vue";
+import ClassView from "/@/components/ClassView.vue";
 import {
   getCampusDepartments,
   getDepartmentCourses,
@@ -62,11 +48,24 @@ import {
   getCourseInfo,
   getCourseClasses,
   ClassInfo,
-} from "../../utilities/openCourseApi";
-import { APIError } from "../../utilities/APIError";
-import { availableCampuses, isAvailableCampus } from "../../utilities/campus";
-import RegisterButton from "../../components/RegisterButton.vue";
-import BackButton from "../../components/BackButton.vue";
+} from "/@/utilities/openCourseApi";
+import { APIError } from "/@/utilities/APIError";
+import { availableCampuses, isAvailableCampus } from "/@/utilities/campus";
+import RegisterButton from "/@/components/RegisterButton.vue";
+import BackButton from "/@/components/BackButton.vue";
+
+const searchFilter = (item, query) => {
+  // Search by CRN or instructor name
+  return (
+    item.CRN.toString().toLowerCase().indexOf(query.toLowerCase()) != -1 ||
+    item.times.some((classSchedule) =>
+      classSchedule.instructor.some(
+        (instructor) =>
+          instructor.toLowerCase().indexOf(query.toLowerCase()) != -1
+      )
+    )
+  );
+};
 
 export default defineComponent({
   name: "Lookup",
@@ -137,6 +136,7 @@ export default defineComponent({
       courseInfo,
       classes,
       error,
+      searchFilter,
     };
   },
 });

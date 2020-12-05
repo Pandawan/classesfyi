@@ -6,6 +6,10 @@
     "importHelpers": true,
     "isolatedModules": true,
     "noEmit": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
+    "paths": {
+      "/@/*": ["src/*"]
+    }
   }
 }

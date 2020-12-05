@@ -2,7 +2,7 @@
   <div class="container">
     <button
       v-if="state === 'initial'"
-      v-on:click="unregister"
+      @click="unregister"
       class="button initial-button"
     >
       Unregister From All Classes

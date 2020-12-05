@@ -2,12 +2,12 @@
   <div class="container">
     <button
       v-if="state === 'initial'"
-      v-on:click="unregister"
+      @click="unregister"
       class="button initial-button"
     >
       Unregister
     </button>
-    <div v-if="error" class="error-message">{{ error.toString() }}</div>
+    <div v-if="error" class="error-message">{{ error }}</div>
     <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success-message">
       Successfully unregistered.

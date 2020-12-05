@@ -2,23 +2,21 @@
   <div class="container">
     <button
       v-if="state === 'initial'"
-      v-on:click="state = 'active'"
+      @click="state = 'active'"
       class="button initial-button"
     >
       Register for Updates
     </button>
     <div v-else-if="state === 'active'">
-      <form v-on:submit.prevent class="active">
+      <form @submit.prevent class="active">
         <input
           v-model="input"
-          v-on:change="error = null"
+          @change="error = null"
           :class="`active-input ${error ? 'error-input' : ''}`"
           type="email"
           placeholder="Enter your email..."
         />
-        <button v-on:click="register" class="button active-button">
-          Register
-        </button>
+        <button @click="register" class="button active-button">Register</button>
       </form>
       <div v-if="error" class="error-message">{{ error.toString() }}</div>
     </div>
@@ -30,10 +28,10 @@
 </template>
 
 <script lang="ts">
-import { emailStore } from "../stores/email";
+import { emailStore } from "/@/stores/email";
 import { defineComponent, PropType, ref } from "vue";
-import { ClassInfo } from "../utilities/openCourseApi";
-import { registerForClass } from "../utilities/classesFyiApi";
+import { ClassInfo } from "/@/utilities/openCourseApi";
+import { registerForClass } from "/@/utilities/classesFyiApi";
 
 export default defineComponent({
   name: "RegisterButton",

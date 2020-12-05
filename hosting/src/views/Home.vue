@@ -18,9 +18,10 @@
     <div>
       <h2>Want to get started?</h2>
       <label>
+        <!-- TODO: Term Selecting -->
         <p>Choose a campus and look for classes</p>
         <select v-model="campusSelect">
-          <option v-for="(name, id) in availableCampuses" v-bind:value="id">
+          <option v-for="(name, id) in availableCampuses" :value="id" :key="id">
             {{ name }}
           </option>
         </select>
@@ -41,14 +42,10 @@
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import { availableCampuses, CampusId } from "../utilities/campus";
-import BackButton from "../components/BackButton.vue";
+import { availableCampuses, CampusId } from "/@/utilities/campus";
 
 export default defineComponent({
   name: "Home",
-  components: {
-    BackButton,
-  },
   setup() {
     const campusSelect = ref<CampusId | null>(null);
 
