@@ -24,7 +24,7 @@
     </SearchableList>
   </div>
   <div v-else>
-    <p>{{ error }}</p>
+    <p>{{ error ?? 'Something went wrong, please try again.' }}</p>
   </div>
 </template>
 

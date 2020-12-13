@@ -1,15 +1,18 @@
 <template>
-  <h2>
-    <BackButton />
-    <span>User {{ email }}</span>
-  </h2>
+  <div class="header">
+    <h2>
+      <BackButton />
+      <span>User {{ email }}</span>
+    </h2>
+    <SignOutButton class="right-align" />
+  </div>
   <p v-if="state === 'loading'">Loading...</p>
   <section v-else-if="state === 'loaded'">
     <div class="header">
       <h3>Currently Registered Classes</h3>
       <UnregisterAllButton
         v-if="possibleClasses !== null"
-        class="unregister-button"
+        class="right-align"
         :email="email"
         @success="getClasses"
       />
@@ -47,7 +50,6 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
 import { getUserClasses, ShortClassInfo } from "/@/utilities/classesFyiApi";
 import SearchableList from "/@/components/SearchableList.vue";
 import { ClassInfo, getClassesInfo } from "/@/utilities/openCourseApi";
@@ -58,6 +60,8 @@ import UnregisterButton from "/@/components/UnregisterButton.vue";
 import UnregisterAllButton from "/@/components/UnregisterAllButton.vue";
 import BackButton from "/@/components/BackButton.vue";
 import { CampusId } from "/@/utilities/campus";
+import { userStore } from "/@/stores/user";
+import SignOutButton from "/@/components/SignOutButton.vue";
 
 // TODO: Clean this up
 const searchFilter = ({ status, error, data: classInfo }, query) => {
@@ -81,19 +85,19 @@ const searchFilter = ({ status, error, data: classInfo }, query) => {
 };
 
 export default defineComponent({
-  name: "UserData",
+  name: "User",
   components: {
     SearchableList,
     ClassView,
     UnregisterButton,
     UnregisterAllButton,
     BackButton,
+    SignOutButton,
   },
   setup(props) {
     // TODO: Cleanup
-    const route = useRoute();
-    const email = computed(() => route.params.email as string);
-    const state = ref<"loading" | "loaded">("loading");
+    const email = computed(() => userStore.state.email);
+    const state = ref<"loading" | "loaded" | "invalid">("loading");
 
     const possibleClasses = ref<
       | (
@@ -210,20 +214,19 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+/* TODO: Add more "generic" stylings in index.css so common formats like left & right aligned header aren't repeated */
+@media (min-width: 450px) {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .header .right-align {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+  }
 }
-.header > * {
-  flex: 1;
-}
-.header .unregister-button {
-  display: flex;
-  align-items: flex-end;
-  flex-direction: column;
-}
-
 .class {
   margin: 2em 0;
 }

@@ -37,7 +37,7 @@ body {
   padding: 1em;
 }
 
-@media (min-width: 400px) {
+@media (min-width: 450px) {
   body {
     font-size: 16px;
   }
@@ -87,18 +87,35 @@ a {
 ------------------------------------- */
 
 input,
-select {
+select,
+button,
+.button {
   display: inline-block;
-  padding: 0.35em 0.5em;
+  font-size: 1.15rem;
+  line-height: 1.5rem;
   border: 0.1em solid var(--text);
-  background-color: var(--background);
   border-radius: 0.12em;
+  background-color: var(--background);
   box-sizing: border-box;
   text-decoration: none;
-  font-size: 1.15rem;
   font-weight: 300;
-  color: var(--text);
   transition: all 0.2s;
+}
+
+@media all and (max-width: 30em) {
+  input,
+  select,
+  .button {
+    display: block;
+    margin: 0.4em auto;
+    width: 100%;
+  }
+}
+
+input,
+select {
+  padding: 0.35em 0.5em;
+  color: var(--text);
 }
 
 select,
@@ -120,35 +137,23 @@ select {
   }
 }
 
+button,
 .button {
-  display: inline-block;
   padding: 0.35em 1.2em;
-  border: 0.1em solid var(--important-text);
-  border-radius: 0.12em;
-  box-sizing: border-box;
-  text-decoration: none;
-  font-weight: 300;
   color: var(--important-text);
-  background-color: var(--background);
   text-align: center;
-  transition: all 0.2s;
 }
+button,
 .button:hover,
+button,
 .button:active,
+button,
 .button:focus {
   color: var(--content-background);
   background-color: var(--important-text);
 }
-@media all and (max-width: 30em) {
-  input,
-  select,
-  .button {
-    display: block;
-    margin: 0.4em auto;
-    width: 100%;
-  }
-}
 
 .side-text {
   color: var(--side-text);
+  font-size: 0.85rem;
 }

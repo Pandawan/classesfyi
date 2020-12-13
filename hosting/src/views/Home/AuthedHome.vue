@@ -1,20 +1,5 @@
 <template>
-  <section>
-    <h2>What is it?</h2>
-    <ul class="feature-list">
-      <li>No need to constantly refresh the class signup page.</li>
-      <li>
-        Simply register for updates for the classes you want, and we'll email
-        you when they open up.
-      </li>
-      <li>Get started now, no account required.</li>
-    </ul>
-    <p class="side-text">
-      Please note that you are not actually signing up for these classes, you
-      are simply getting updates about their availability.
-    </p>
-  </section>
-  <section class="split-content">
+  <div class="split-content">
     <div>
       <h2>Want to get started?</h2>
       <label>
@@ -36,7 +21,7 @@
         >
       </label>
     </div>
-  </section>
+  </div>
 </template>
 
 <script lang="ts">
@@ -45,7 +30,7 @@ import { useRouter } from "vue-router";
 import { availableCampuses, CampusId } from "/@/utilities/campus";
 
 export default defineComponent({
-  name: "Home",
+  name: "AuthedHome",
   setup() {
     const campusSelect = ref<CampusId | null>(null);
 
@@ -66,10 +51,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-section {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-}
 .split-content {
   width: 100%;
   display: flex;
@@ -87,9 +68,5 @@ section {
   .split-content > *:not(:last-child) {
     margin-bottom: 1.5rem;
   }
-}
-
-.side-text {
-  font-size: 0.85rem;
 }
 </style>

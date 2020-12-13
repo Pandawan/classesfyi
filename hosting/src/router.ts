@@ -1,9 +1,8 @@
-import { createWebHistory, createRouter, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 
-import Home from "./views/Home.vue";
+import Home from "./views/Home/Home.vue";
 import About from "./views/About.vue";
-import UserForm from "./views/User/UserForm.vue";
-import UserData from "./views/User/UserData.vue";
+import User from "./views/User.vue";
 import CampusLookup from "./views/Lookup/CampusLookup.vue";
 import DepartmentLookup from "./views/Lookup/DepartmentLookup.vue";
 import CourseLookup from "./views/Lookup/CourseLookup.vue";
@@ -35,13 +34,8 @@ const routes = [
   },
   {
     path: "/user",
-    component: UserForm,
-    name: "user_form",
-  },
-  {
-    path: "/user/:email",
-    component: UserData,
-    name: "user_data",
+    component: User,
+    name: "user",
   },
   ...withPrefix("/lookup", [
     {

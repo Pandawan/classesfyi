@@ -1,10 +1,6 @@
 <template>
   <div class="container">
-    <button
-      v-if="state === 'initial'"
-      @click="unregister"
-      class="button initial-button"
-    >
+    <button v-if="state === 'initial'" @click="unregister" class="button">
       Unregister From All Classes
     </button>
     <div v-if="error" class="error-message">{{ error.toString() }}</div>
@@ -16,33 +12,28 @@
 </template>
 
 <script lang="ts">
-import { emailStore } from "../stores/email";
+import { userStore } from "../stores/user";
 import { defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "../utilities/openCourseApi";
-import {
-  unregisterForClass,
-  unregisterFromAllClasses,
-} from "../utilities/classesFyiApi";
+import { unregisterFromAllClasses } from "../utilities/classesFyiApi";
 
 export default defineComponent({
-  name: "RegisterButton",
-  props: {
-    email: {
-      type: String,
-      required: true,
-    },
-  },
+  name: "UnregisterAllButton",
   setup(props, { emit }) {
     const state = ref<"initial" | "loading" | "success">("initial");
-    const input = ref<string>(emailStore.state.email ?? "");
     const error = ref<string | null>(null);
 
     const unregister = async () => {
+      if (userStore.state.isSignedIn === false) {
+        error.value = "Could not register for class, please sign in.";
+        return;
+      }
       error.value = null;
-
       state.value = "loading";
 
-      const [apiError, result] = await unregisterFromAllClasses(props.email);
+      const [apiError, result] = await unregisterFromAllClasses(
+        userStore.state.email
+      );
 
       if (result !== null) {
         // TODO: Change API to return list of registered/duplicated classes so client can say when they were not registered
@@ -54,15 +45,13 @@ export default defineComponent({
       }
     };
 
-    return { state, input, error, unregister };
+    return { state, error, unregister };
   },
 });
 </script>
 
-<style>
-.error-input {
-  border-color: #ff7975;
-}
+<style scoped>
+/* TODO: Add more "generic" stylings in index.css so error & success messages aren't duplicated */
 .error-message {
   color: red;
 }

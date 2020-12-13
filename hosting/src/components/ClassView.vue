@@ -103,7 +103,7 @@ export default {
   flex-direction: column;
 }
 
-@media (min-width: 400px) {
+@media (min-width: 450px) {
   .seats {
     flex-direction: row;
   }

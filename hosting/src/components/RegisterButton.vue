@@ -1,25 +1,9 @@
 <template>
   <div class="container">
-    <button
-      v-if="state === 'initial'"
-      @click="state = 'active'"
-      class="button initial-button"
-    >
+    <button v-if="state === 'initial'" @click="register" class="button">
       Register for Updates
     </button>
-    <div v-else-if="state === 'active'">
-      <form @submit.prevent class="active">
-        <input
-          v-model="input"
-          @change="error = null"
-          :class="`active-input ${error ? 'error-input' : ''}`"
-          type="email"
-          placeholder="Enter your email..."
-        />
-        <button @click="register" class="button active-button">Register</button>
-      </form>
-      <div v-if="error" class="error-message">{{ error.toString() }}</div>
-    </div>
+    <div v-if="error" class="error-message">{{ error.toString() }}</div>
     <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success-message">
       Successfully registered for updates.
@@ -28,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { emailStore } from "/@/stores/email";
+import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "/@/utilities/openCourseApi";
 import { registerForClass } from "/@/utilities/classesFyiApi";
@@ -42,22 +26,18 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const state = ref<"initial" | "active" | "loading" | "success">("initial");
-    const input = ref<string>(emailStore.state.email ?? "");
+    const state = ref<"initial" | "loading" | "success" | "error">("initial");
     const error = ref<string | null>(null);
 
     const register = async () => {
-      error.value = null;
-      const potentialEmail = input.value.trim();
-
-      if (emailStore.validateEmail(potentialEmail) === false) {
-        error.value = "Invalid email address";
+      if (userStore.state.isSignedIn === false) {
+        error.value = "Could not register for class, please sign in.";
         return;
       }
-      emailStore.setEmail(potentialEmail);
+      error.value = null;
       state.value = "loading";
 
-      const [apiError, result] = await registerForClass(potentialEmail, {
+      const [apiError, result] = await registerForClass(userStore.state.email, {
         campus: props.classInfo.campus,
         department: props.classInfo.department,
         course: props.classInfo.course,
@@ -68,40 +48,17 @@ export default defineComponent({
         // TODO: Change API to return list of registered/duplicated classes so client can say when the user is already registered
         state.value = "success";
       } else {
-        state.value = "active";
+        state.value = "initial";
         error.value = `Something went wrong, please try again. ${apiError.toString()}`;
       }
     };
 
-    return { state, input, error, register };
+    return { state, error, register };
   },
 });
 </script>
 
 <style scoped>
-.active {
-  display: flex;
-  flex-direction: column;
-}
-
-@media (min-width: 400px) {
-  .active {
-    flex-direction: row;
-  }
-  .active-input {
-    border-right: none;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    flex: 1;
-  }
-  .active-button {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-}
-.error-input {
-  border-color: #ff7975;
-}
 .error-message {
   color: red;
 }
