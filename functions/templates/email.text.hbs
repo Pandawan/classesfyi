@@ -10,7 +10,7 @@ availability.
 
 {{#each classesData as | classes campus |}}
 
-{{ campusNames[campus] }}
+{{ lookup ../campusNames campus }}
 ------------
 {{#each classes as | classData |}}
 

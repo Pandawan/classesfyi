@@ -2,9 +2,16 @@ import * as functions from "firebase-functions";
 import got from "got";
 
 import { store } from "./index";
-import { ClassData, isClassData } from "./utilities/classData";
+import { ClassData, ClassInfo, cleanupClassInfo } from "./utilities/classData";
 import { groupBy } from "./utilities/groupBy";
 import { sendEmail } from "./utilities/sendEmail";
+import { uniqWith } from "./utilities/uniqWith";
+
+export const test = functions.https.onRequest(async (req, resp) => {
+  console.log(JSON.stringify(await getAllClasses()));
+  await updateClassesData.run(undefined, undefined);
+  resp.send();
+});
 
 /**
  * Register the given user for updates from the given classes.
@@ -26,12 +33,13 @@ export const updateClassesData = functions.pubsub.schedule("every 15 minutes")
 
       // Loop through all classes that have changes,
       // and generate a record of users to be updated along with the changes to update them on
-      for (const [classRef, classDataWithChanges] of classesWithChanges) {
+      for (const classDataWithChanges of classesWithChanges) {
         // Get all users that are registered to this specific class
         const usersRegisteredToClass = await store.collection("users").where(
           "registered_classes",
           "array-contains",
-          classRef,
+          // Only keep the class info to match with user
+          cleanupClassInfo(classDataWithChanges),
         ).get();
         if (usersRegisteredToClass.empty === true) break;
 
@@ -170,45 +178,30 @@ async function sendEmailWithChanges(
 }
 
 export interface ClassDataWithChanges extends ClassData {
+  department: string;
+  course: string;
   changes: ClassDataChange[];
 }
 
 async function getClassesWithImportantChanges() {
-  const classesCollection = (await store.collection("classes").get()).docs
-    // Remove any snapshot that contains invalid class data
-    .filter((snapshot) => {
-      if (isClassData(snapshot.data()) === false) {
-        functions.logger.error(
-          `Classes database contains invalid class data`,
-          snapshot.data(),
-        );
-        return false;
-      }
-      return true;
-    });
+  const classesCollection = await getAllClasses();
 
   // A mapping of class reference and the changes since the previous update
-  const classesChanges: [
-    FirebaseFirestore.DocumentReference,
-    ClassDataWithChanges,
-  ][] = [];
+  const classesChanges: ClassDataWithChanges[] = [];
 
-  const currentClassSnapshotsByCampus = groupBy(
+  const currentClassesByCampus = groupBy(
     classesCollection,
-    (snapshot) => snapshot.data().campus,
+    (snapshot) => snapshot.campus,
   );
 
   // TODO: this could be optimized by storing classes by CRN in a map rather than as an array
   for (
-    const [campus, classSnapshots] of Object.entries(
-      currentClassSnapshotsByCampus,
+    const [campus, classInfos] of Object.entries(
+      currentClassesByCampus,
     )
   ) {
     // Get all the data for that given campus
-    const updatedClassesData = await getUpdatedClassesData(
-      campus,
-      classSnapshots.map((snapshot) => snapshot.data() as ClassData),
-    );
+    const updatedClassesData = await getUpdatedClassesData(campus, classInfos);
 
     if (updatedClassesData === null) {
       functions.logger.error("No data found for campus", campus);
@@ -230,8 +223,34 @@ async function getClassesWithImportantChanges() {
       const updatedClassData = updatedClassDataResponse.data;
 
       // Find the class pair that matches with the updated class data (by index since the API returns in the same order)
-      const currentClassSnapshot = classSnapshots[index];
-      const currentClassData = currentClassSnapshot?.data() as ClassData;
+      const currentClassSnapshotQuery = await store.collection("classes")
+        .where("campus", "==", classInfos[index].campus)
+        .where("year", "==", classInfos[index].year)
+        .where("term", "==", classInfos[index].term)
+        .where("crn", "==", classInfos[index].crn)
+        .get();
+
+      // TODO: Handle more than one?
+      // TODO: If did based on subcollections, this would not be an issue
+      let currentClassSnapshot: FirebaseFirestore.DocumentSnapshot =
+        currentClassSnapshotQuery.docs[0];
+
+      // If no class was found, need to create a new one
+      if (currentClassSnapshotQuery.empty) {
+        const newClassRef = store.collection("classes").doc();
+        // Create a new document with the basic class info
+        await newClassRef.create(classInfos[index]);
+        // Set it as current class snapshot
+        currentClassSnapshot = await newClassRef.get();
+      } else if (currentClassSnapshotQuery.size > 1) {
+        functions.logger.error(
+          "There are more than one classes registered with the given class info.",
+          classInfos[index],
+        );
+      }
+
+      const currentClassData = currentClassSnapshot
+        ?.data() as ClassData;
 
       // Get a list of important changes
       const importantChanges = getImportantChanges(
@@ -241,10 +260,12 @@ async function getClassesWithImportantChanges() {
       if (importantChanges.length !== 0) {
         const classDataWithChanges = {
           ...currentClassData,
+          department: updatedClassData.dept,
+          course: updatedClassData.course,
           changes: importantChanges,
         };
         // If there were important changes, add them to the complete list for all classes
-        classesChanges.push([currentClassSnapshot.ref, classDataWithChanges]);
+        classesChanges.push(classDataWithChanges);
       }
 
       // Update class's firestore data with new data from OpenCourseAPI
@@ -259,6 +280,33 @@ async function getClassesWithImportantChanges() {
   }
 
   return classesChanges;
+}
+
+/**
+ * Get a list of all classes that each users is registered for.
+ */
+async function getAllClasses(): Promise<ClassInfo[]> {
+  const registeredClassesRefs = await store.collection("users").select(
+    "registered_classes",
+  )
+    .get();
+  const registeredClassesPerUser = registeredClassesRefs.docs
+    .map((docRef) => docRef.data()?.registered_classes)
+    // Remove users without classes (should not happen but just in case)
+    .filter((registeredClasses) => registeredClasses !== undefined);
+  // Flatten all the registered_classes into one array with all classes
+  const listOfClassesWithDuplicates = registeredClassesPerUser.flat();
+  // Remove duplicate entries
+  const listOfClasses = uniqWith<ClassInfo>(
+    listOfClassesWithDuplicates,
+    (a, b) =>
+      // Start with CRN for early short circuit
+      a.crn === b.crn &&
+      a.term === b.term &&
+      a.year === b.year &&
+      a.campus === b.campus,
+  );
+  return listOfClasses;
 }
 
 type ClassDataChange = {

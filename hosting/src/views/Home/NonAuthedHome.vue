@@ -28,17 +28,20 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
+import { userStore } from "/@/stores/user";
 import fire from "/@/utilities/fire";
 
 export default defineComponent({
   name: "NonAuthedHome",
   setup() {
-    const emailInput = ref<string | null>(null);
+    const emailInput = ref<string | null>(userStore.state.email ?? null);
     const error = ref<string | null>(null);
     const success = ref<string | null>(null);
 
     const submit = async () => {
       try {
+        userStore.setEmail(emailInput.value);
+
         const result = await fire
           .auth()
           .sendSignInLinkToEmail(emailInput.value, {

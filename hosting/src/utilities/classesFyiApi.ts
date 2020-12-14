@@ -3,8 +3,8 @@ import { CampusId } from "./campus";
 
 export interface ShortClassInfo {
   campus: CampusId;
-  department: string;
-  course: string;
+  year: number;
+  term: string;
   crn: number;
 }
 

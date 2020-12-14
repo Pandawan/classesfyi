@@ -5,7 +5,7 @@ export const userStore = {
   state: reactive({
     isSignedIn: false,
     // By default, email uses the localStorage value
-    email: localStorage.getItem("email") ?? "",
+    email: localStorage.getItem("email") ?? null,
   }),
 
   /**
@@ -13,9 +13,13 @@ export const userStore = {
    * Note: This is used for authentcation flow to remember the email it is currently signing in with.
    * @param email The email to store.
    */
-  setEmail(email: string) {
+  setEmail(email: string | null) {
     this.state.email = email;
-    localStorage.setItem("email", email);
+    if (email === null) {
+      localStorage.removeItem("email");
+    } else {
+      localStorage.setItem("email", email);
+    }
   },
 
   /**

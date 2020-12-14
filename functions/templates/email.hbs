@@ -358,7 +358,7 @@
 
 <body class="">
   <span class="preheader">
-    We found updates about your {{ classNames }} classes.
+    We found updates about your registered classes.
   </span>
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
     <tr>
@@ -382,7 +382,7 @@
                       <p>Please note that you are not actually signed up for these classes, you are simply getting
                         updates about their availability.</p>
                       {{#each classesData as | classes campus |}}
-                      <h3>{{ campusNames[campus] }}</h3>
+                      <h3>{{ lookup ../campusNames campus }}</h3>
                       <table>
                         <tr>
                           <th class="align-left">Class</th>

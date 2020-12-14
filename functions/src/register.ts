@@ -3,9 +3,10 @@ import * as admin from "firebase-admin";
 
 import { store } from "./index";
 import {
-  ClassData,
-  cleanupClassData,
-  isClassData,
+  ClassInfo,
+  classInfoFormat,
+  cleanupClassInfo,
+  isClassInfo,
 } from "./utilities/classData";
 import {
   createErrorResponse,
@@ -22,7 +23,7 @@ import { verifyEmail } from "./utilities/verifyEmail";
  * ```
  * { 
  *  email: string, 
- *  classes: ClassData[] 
+ *  classes: ClassInfo[] 
  * }
  * ```
  */
@@ -35,13 +36,6 @@ export const registerClasses = functions.https.onRequest(
       return;
     }
     const email = emailResult.value;
-
-    // Get & verify user
-    const userRef = store.collection("users").doc(email);
-    if ((await userRef.get()).exists === false) {
-      // NOTE: Not updating user snapshot because only care about the reference to it, not its data.
-      await userRef.create({ registered_classes: [] });
-    }
 
     // Verify classes is an array
     const potentialClassList = request.body?.classes;
@@ -60,64 +54,37 @@ export const registerClasses = functions.https.onRequest(
 
     // Validate each class' format
     const invalidClasses = potentialClassList
-      .filter((potentialClass: any) => isClassData(potentialClass) === false);
+      .filter((potentialClass: any) => isClassInfo(potentialClass) === false);
     if (invalidClasses.length !== 0) {
       response.status(400).send(createErrorResponse(
         [
-          `Classes must be objects in the format { campus: string, department: string, course: string, crn: number }.`,
+          `Classes must be objects in the format ${classInfoFormat}.`,
           `Got: ${JSON.stringify(invalidClasses)}`,
         ].join("\n"),
       ));
       return;
     }
 
-    // Make a list of classes to look for
-    const classesToLookFor: ClassData[] = potentialClassList
-      // Clean up the data for database usage
-      .map((classData: ClassData) => cleanupClassData(classData, false));
-    const classesToAddToUser: FirebaseFirestore.DocumentReference[] = [];
-
-    // Loop through user given list of classes
-    for (const classToLookFor of classesToLookFor) {
-      // Look for class with those exact criteria
-      const classToRegister = await store.collection("classes")
-        .where("campus", "==", classToLookFor.campus)
-        .where("department", "==", classToLookFor.department)
-        .where("course", "==", classToLookFor.course)
-        .where("crn", "==", classToLookFor.crn)
-        .get();
-
-      // Create class that hasn't been registered before
-      if (classToRegister.empty) {
-        const newClassRef = store.collection("classes").doc();
-        // Create that class
-        await newClassRef.create({
-          campus: classToLookFor.campus,
-          department: classToLookFor.department,
-          course: classToLookFor.course,
-          crn: classToLookFor.crn,
-        });
-        classesToAddToUser.push(newClassRef);
-      } // Class does exist
-      else {
-        // Check that only one class matches these criteria, but recover graciously if more than one
-        if (classToRegister.size !== 1) {
-          functions.logger.error(
-            "More than one class found for query",
-            classToLookFor,
-          );
-        }
-
-        // Push class to register references to list of classes to add
-        classesToAddToUser.push(...classToRegister.docs.map((doc) => doc.ref));
-      }
+    // Get & verify user
+    // After verifying class format so we know it's okay to create the user
+    const userRef = store.collection("users").doc(email);
+    // Create if it doesn't exist
+    if ((await userRef.get()).exists === false) {
+      // NOTE: Not updating user snapshot because only care about the reference to it, not its data.
+      await userRef.create({ registered_classes: [] });
     }
 
-    if (classesToAddToUser.length !== 0) {
-      // Write all the classes at the end, so that any error occuring means nothing gets written.
+    // Make a list of classes to add
+    const classesToAdd: ClassInfo[] = potentialClassList
+      // Clean up the data for database usage
+      .map((classData: ClassInfo) => cleanupClassInfo(classData));
+    // TODO: Could check if userData already contains classes, and don't include those (return a 'duplicated')
+
+    if (classesToAdd.length !== 0) {
+      // Add the classes to the user's registered classes list
       await userRef.update({
         registered_classes: admin.firestore.FieldValue.arrayUnion(
-          ...classesToAddToUser,
+          ...classesToAdd,
         ),
       });
 

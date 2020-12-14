@@ -12,14 +12,8 @@
   },
   "hosting": {
     "public": "hosting/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "predeploy": [
-      "npm --prefix \"$PROJECT_DIR/hosting\" run build"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "predeploy": ["npm --prefix \"$PROJECT_DIR/hosting\" run build"],
     "rewrites": [
       {
         "source": "/api/registerClasses",

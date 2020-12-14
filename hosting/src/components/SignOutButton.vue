@@ -5,6 +5,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
+import { userStore } from "/@/stores/user";
 import fire from "../utilities/fire";
 
 export default defineComponent({
@@ -14,6 +15,8 @@ export default defineComponent({
 
     const signOut = async () => {
       await fire.auth().signOut();
+      userStore.setEmail(null);
+
       router.push("/");
     };
 

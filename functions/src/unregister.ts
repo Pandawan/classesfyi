@@ -3,16 +3,17 @@ import * as admin from "firebase-admin";
 
 import { store } from "./index";
 import {
-  ClassData,
-  cleanupClassData,
-  isClassData,
+  ClassInfo,
+  classInfoFormat,
+  cleanupClassInfo,
+  isClassInfo,
 } from "./utilities/classData";
 import {
   createErrorResponse,
   createSuccessResponse,
 } from "./utilities/response";
 import { verifyEmail } from "./utilities/verifyEmail";
-import { isClassUnused } from "./utilities/isClassUnused";
+import { removeUnusedClasses } from "./utilities/unusedClasses";
 
 /**
  * Unregister the given user from updates from the given classes.
@@ -23,7 +24,7 @@ import { isClassUnused } from "./utilities/isClassUnused";
  * ```
  * { 
  *  email: string, 
- *  classes: ClassData[] 
+ *  classes: ClassInfo[] 
  * }
  * ```
  */
@@ -62,21 +63,20 @@ export const unregisterClasses = functions.https.onRequest(
 
     // Validate each class' format
     const invalidClasses = potentialClassList
-      .filter((potentialClass: any) => isClassData(potentialClass) === false);
+      .filter((potentialClass: any) => isClassInfo(potentialClass) === false);
     if (invalidClasses.length !== 0) {
       response.status(400).send(createErrorResponse(
         [
-          `Classes must be objects in the format { campus: string, department: string, course: string, crn: number }.`,
+          `Classes must be objects in the format ${classInfoFormat}.`,
           `Got: ${JSON.stringify(invalidClasses)}`,
         ].join("\n"),
       ));
       return;
     }
 
-    const classesToLookFor: ClassData[] = potentialClassList
+    const classesToRemove: ClassInfo[] = potentialClassList
       // Clean up the data for database usage
-      .map((classData: ClassData) => cleanupClassData(classData, false));
-    const classesToRemoveFromUser: FirebaseFirestore.DocumentReference[] = [];
+      .map((classData: ClassInfo) => cleanupClassInfo(classData));
 
     if (
       registeredClasses === undefined ||
@@ -87,46 +87,22 @@ export const unregisterClasses = functions.https.onRequest(
         registeredClasses,
       );
       response.status(400).send(
-        createErrorResponse("User was not registered to any class."),
+        createErrorResponse("User is not registered to any class."),
       );
       return;
     }
 
-    // Loop through all registered classes and check which match with the list that was given
-    for (const registeredClass of registeredClasses) {
-      if (registeredClass instanceof admin.firestore.DocumentReference) {
-        const registeredClassData = (await registeredClass.get()).data();
-
-        const classShouldBeRemoved = classesToLookFor.some((classData) =>
-          classData.crn === registeredClassData?.crn &&
-          classData.course === registeredClassData?.course &&
-          classData.department === registeredClassData?.department &&
-          classData.campus === registeredClassData?.campus
-        );
-
-        if (classShouldBeRemoved) {
-          classesToRemoveFromUser.push(registeredClass);
-        }
-      }
-    }
-
     // There are classes to remove
-    if (classesToRemoveFromUser.length !== 0) {
+    if (classesToRemove.length !== 0) {
       // Write all the class removing operations at the end, so that any error occuring means nothing gets written
       await userRef.update({
         registered_classes: admin.firestore.FieldValue.arrayRemove(
-          ...classesToRemoveFromUser,
+          ...classesToRemove,
         ),
       });
 
-      // Perform class cleanup if needed, create a list of class deletion tasks
-      const tasks = classesToRemoveFromUser.map(async (classToRemove) => {
-        if (await isClassUnused(classToRemove)) {
-          await classToRemove.delete();
-        }
-      });
-      // Wait for class deletion to finish
-      await Promise.all(tasks);
+      // Delete any class that is being removed and is no longer being used
+      await removeUnusedClasses(classesToRemove);
 
       // Check if user is no longer registered to any classes, if so, delete it
       const newRegisteredClasses = (await userRef.get()).data()

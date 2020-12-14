@@ -1,8 +1,7 @@
-import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 
 import { store } from "./index";
-import { isClassUnused } from "./utilities/isClassUnused";
+import { removeUnusedClasses } from "./utilities/unusedClasses";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -38,16 +37,7 @@ export const unregisterAllClasses = functions.https.onRequest(
 
     // Delete any class that the user was registered to and is no longer used
     if (registeredClasses !== undefined && Array.isArray(registeredClasses)) {
-      // Create a list of class deletion tasks
-      const tasks = registeredClasses.map(async (registeredClass) => {
-        if (registeredClass instanceof admin.firestore.DocumentReference) {
-          if (await isClassUnused(registeredClass)) {
-            await registeredClass.delete();
-          }
-        }
-      });
-      // Wait for class deletion to finish
-      await Promise.all(tasks);
+      await removeUnusedClasses(registeredClasses);
     }
 
     response.send(
