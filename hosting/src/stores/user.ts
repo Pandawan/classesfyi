@@ -35,6 +35,9 @@ export const userStore = {
   },
 };
 
-fire.auth().onAuthStateChanged((user) => {
-  userStore.updateUser(user);
-});
+export let authStateUnsub: firebase.default.Unsubscribe | null = null;
+if (authStateUnsub === null) {
+  authStateUnsub = fire.auth().onAuthStateChanged((user) => {
+    userStore.updateUser(user);
+  });
+}

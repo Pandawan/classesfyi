@@ -19,7 +19,7 @@
       <AuthedHome />
     </div>
     <div v-else-if="isSignedIn === false">
-      <p v-if="signInError" class="error-message">
+      <p v-if="signInError" class="error">
         {{ signInError.toString() }}
       </p>
       <NonAuthedHome />
@@ -62,10 +62,12 @@ export default defineComponent({
 
           signInError.value = null;
         } catch (err) {
-          // TODO: Currently, error flashes while firebase is fetching current authentication state, fix this...
-          signInError.value =
-            "Could not complete sign in process, please try again.";
-          console.error(err);
+          // HACK: Don't show error message with internal-error because those happen when loading user state.
+          if (err.code !== undefined && err.code !== "auth/internal-error") {
+            signInError.value =
+              "Could not complete sign in process, please try again.";
+            console.error(err);
+          }
         }
       }
     };
@@ -83,8 +85,5 @@ export default defineComponent({
 section {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
-}
-.error-message {
-  color: red;
 }
 </style>

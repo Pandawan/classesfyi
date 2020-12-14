@@ -3,9 +3,9 @@
     <button v-if="state === 'initial'" @click="unregister" class="button">
       Unregister From All Classes
     </button>
-    <div v-if="error" class="error-message">{{ error.toString() }}</div>
+    <div v-if="error" class="error">{{ error.toString() }}</div>
     <div v-if="state === 'loading'">Loading...</div>
-    <div v-if="state === 'success'" class="success-message">
+    <div v-if="state === 'success'" class="success">
       Successfully unregistered.
     </div>
   </div>
@@ -51,11 +51,4 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* TODO: Add more "generic" stylings in index.css so error & success messages aren't duplicated */
-.error-message {
-  color: red;
-}
-.success-message {
-  color: green;
-}
 </style>

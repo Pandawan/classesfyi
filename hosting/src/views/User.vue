@@ -215,7 +215,7 @@ export default defineComponent({
 
 <style scoped>
 /* TODO: Add more "generic" stylings in index.css so common formats like left & right aligned header aren't repeated */
-@media (min-width: 450px) {
+@media (min-width: 500px) {
   .header {
     display: flex;
     justify-content: space-between;

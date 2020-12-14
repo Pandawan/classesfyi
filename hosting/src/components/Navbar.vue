@@ -37,7 +37,7 @@ header nav {
   justify-content: space-between;
   align-items: center;
 }
-@media (max-width: 450px) {
+@media (max-width: 500px) {
   header nav {
     flex-direction: column;
   }

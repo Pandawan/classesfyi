@@ -37,7 +37,7 @@ body {
   padding: 1em;
 }
 
-@media (min-width: 450px) {
+@media (min-width: 500px) {
   body {
     font-size: 16px;
   }
@@ -80,6 +80,21 @@ ol li {
 a {
   color: #3498db;
   text-decoration: underline;
+}
+
+/* TODO: Better colors */
+p.error,
+div.error {
+  color: #dc3545;
+}
+p.success,
+div.success {
+  color: #198754;
+}
+
+input.error,
+button.error {
+  border-color: #ff7975;
 }
 
 /* -------------------------------------
