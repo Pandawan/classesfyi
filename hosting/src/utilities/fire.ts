@@ -18,6 +18,7 @@ const fire = firebase.initializeApp(firebaseConfig);
 if (import.meta.env.MODE === "development") {
   console.warn("Running firebase client in dev mode");
   fire.auth().useEmulator("http://localhost:9099/");
+  fire.firestore().useEmulator("localhost", 8080);
 }
 
 export default fire;

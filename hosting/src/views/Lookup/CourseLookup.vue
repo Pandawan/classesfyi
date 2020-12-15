@@ -31,7 +31,7 @@
     </SearchableList>
   </div>
   <div v-else>
-    <p>{{ error ?? 'Something went wrong, please try again.' }}</p>
+    <p>{{ error ?? "Something went wrong, please try again." }}</p>
   </div>
 </template>
 
@@ -50,9 +50,14 @@ import {
   ClassInfo,
 } from "/@/utilities/openCourseApi";
 import { APIError } from "/@/utilities/APIError";
-import { availableCampuses, isAvailableCampus } from "/@/utilities/campus";
+import {
+  availableCampuses,
+  CampusId,
+  isAvailableCampus,
+} from "/@/utilities/campus";
 import RegisterButton from "/@/components/RegisterButton.vue";
 import BackButton from "/@/components/BackButton.vue";
+import { getOrFetchTerm } from "/@/stores/term";
 
 const searchFilter = (item, query) => {
   // Search by CRN or instructor name
@@ -77,7 +82,7 @@ export default defineComponent({
   },
   setup(props) {
     const route = useRoute();
-    const campusId = computed(() => route.params.campusId as string);
+    const campusId = computed(() => route.params.campusId as CampusId);
     const campusName = computed<string>(
       () => availableCampuses[campusId.value]
     );
@@ -90,10 +95,13 @@ export default defineComponent({
 
     const getInfoForCourse = async () => {
       if (isAvailableCampus(campusId.value)) {
+        const { year, term } = await getOrFetchTerm(campusId.value);
         const [err, crs] = await getCourseInfo(
           campusId.value,
           departmentId.value,
-          courseId.value
+          courseId.value,
+          year,
+          term
         );
 
         if (err === null) courseInfo.value = crs;
@@ -107,10 +115,13 @@ export default defineComponent({
 
     const getClasses = async () => {
       if (isAvailableCampus(campusId.value)) {
+        const { year, term } = await getOrFetchTerm(campusId.value);
         const [err, crs] = await getCourseClasses(
           campusId.value,
           departmentId.value,
-          courseId.value
+          courseId.value,
+          year,
+          term
         );
 
         if (err === null) {

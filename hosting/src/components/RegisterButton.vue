@@ -3,7 +3,7 @@
     <button v-if="state === 'initial'" @click="register" class="button">
       Register for Updates
     </button>
-    <div v-if="error" class="error">{{ error.toString() }}</div>
+    <div v-if="error" class="error">{{ error }}</div>
     <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success">
       Successfully registered for updates.
@@ -16,6 +16,7 @@ import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "/@/utilities/openCourseApi";
 import { registerForClass } from "/@/utilities/classesFyiApi";
+import { getOrFetchTerm } from "../stores/term";
 
 export default defineComponent({
   name: "RegisterButton",
@@ -37,10 +38,11 @@ export default defineComponent({
       error.value = null;
       state.value = "loading";
 
+      const { year, term } = await getOrFetchTerm(props.classInfo.campus);
       const [apiError, result] = await registerForClass(userStore.state.email, {
         campus: props.classInfo.campus,
-        department: props.classInfo.department,
-        course: props.classInfo.course,
+        year,
+        term,
         crn: props.classInfo.CRN,
       });
 

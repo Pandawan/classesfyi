@@ -20,7 +20,7 @@
     </div>
     <div v-else-if="isSignedIn === false">
       <p v-if="signInError" class="error">
-        {{ signInError.toString() }}
+        {{ signInError }}
       </p>
       <NonAuthedHome />
     </div>

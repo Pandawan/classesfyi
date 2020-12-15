@@ -24,7 +24,7 @@
     </SearchableList>
   </div>
   <div v-else>
-    <p>{{ error ?? 'Something went wrong, please try again.' }}</p>
+    <p>{{ error ?? "Something went wrong, please try again." }}</p>
   </div>
 </template>
 
@@ -37,8 +37,13 @@ import {
   DepartmentInfo,
 } from "/@/utilities/openCourseApi";
 import { APIError } from "/@/utilities/APIError";
-import { availableCampuses, isAvailableCampus } from "/@/utilities/campus";
+import {
+  availableCampuses,
+  CampusId,
+  isAvailableCampus,
+} from "/@/utilities/campus";
 import BackButton from "/@/components/BackButton.vue";
+import { getOrFetchTerm } from "/@/stores/term";
 
 export default defineComponent({
   name: "Lookup",
@@ -48,7 +53,7 @@ export default defineComponent({
   },
   setup(props) {
     const route = useRoute();
-    const campusId = computed(() => route.params.campusId as string);
+    const campusId = computed(() => route.params.campusId as CampusId);
     const campusName = computed<string>(
       () => availableCampuses[campusId.value]
     );
@@ -58,7 +63,12 @@ export default defineComponent({
 
     const getDepartments = async () => {
       if (isAvailableCampus(campusId.value)) {
-        const [err, depts] = await getCampusDepartments(campusId.value);
+        const { year, term } = await getOrFetchTerm(campusId.value);
+        const [err, depts] = await getCampusDepartments(
+          campusId.value,
+          year,
+          term
+        );
 
         if (err === null) {
           departments.value = depts;

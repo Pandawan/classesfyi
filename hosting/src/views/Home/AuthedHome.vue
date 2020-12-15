@@ -3,7 +3,7 @@
     <div>
       <h2>Want to get started?</h2>
       <label>
-        <!-- TODO: Term Selecting -->
+        <!-- TODO: Previous term viewing (termStore can have isCurrentTerm to display/hide register button) -->
         <p>Choose a campus and look for classes</p>
         <select v-model="campusSelect">
           <option v-for="(name, id) in availableCampuses" :value="id" :key="id">
@@ -27,6 +27,7 @@
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import { refreshCurrentTermData } from "/@/stores/term";
 import { availableCampuses, CampusId } from "/@/utilities/campus";
 
 export default defineComponent({
@@ -37,6 +38,9 @@ export default defineComponent({
     const router = useRouter();
 
     const navigateToCampusLookup = () => {
+      // Refresh the term data (just in case) when selecting a campus
+      refreshCurrentTermData(campusSelect.value);
+
       router.push(`/lookup/${campusSelect.value}`);
     };
 

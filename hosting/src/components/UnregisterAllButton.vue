@@ -3,7 +3,7 @@
     <button v-if="state === 'initial'" @click="unregister" class="button">
       Unregister From All Classes
     </button>
-    <div v-if="error" class="error">{{ error.toString() }}</div>
+    <div v-if="error" class="error">{{ error }}</div>
     <div v-if="state === 'loading'">Loading...</div>
     <div v-if="state === 'success'" class="success">
       Successfully unregistered.

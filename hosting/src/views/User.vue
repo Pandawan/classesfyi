@@ -49,10 +49,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from "vue";
+import { computed, defineComponent, onMounted, ref, watchEffect } from "vue";
 import { getUserClasses, ShortClassInfo } from "/@/utilities/classesFyiApi";
 import SearchableList from "/@/components/SearchableList.vue";
-import { ClassInfo, getClassesInfo } from "/@/utilities/openCourseApi";
+import {
+  ClassInfo,
+  getClassesInfo,
+  getClassInfo,
+} from "/@/utilities/openCourseApi";
 import { APIError } from "/@/utilities/APIError";
 import { groupBy } from "/@/utilities/groupBy";
 import ClassView from "/@/components/ClassView.vue";
@@ -62,6 +66,7 @@ import BackButton from "/@/components/BackButton.vue";
 import { CampusId } from "/@/utilities/campus";
 import { userStore } from "/@/stores/user";
 import SignOutButton from "/@/components/SignOutButton.vue";
+import fire from "/@/utilities/fire";
 
 // TODO: Clean this up
 const searchFilter = ({ status, error, data: classInfo }, query) => {
@@ -116,90 +121,92 @@ export default defineComponent({
     const classesError = ref<string | null>(null);
 
     const getClasses = async () => {
-      const [apiError, result] = await getUserClasses(email.value);
-
-      if (result !== null) {
-        const classesDataByCampus = groupBy(
-          result,
-          (shortClassInfo) => shortClassInfo.campus
-        );
-        const tasks = Object.entries(classesDataByCampus).map(
-          async ([campus, shortClassesInfo]) => {
-            const CRNs = shortClassesInfo.map(
-              (shortClassInfo) => shortClassInfo.crn
-            );
-            return {
-              campus,
-              result: await getClassesInfo(campus as CampusId, CRNs),
-            };
-          }
-        );
-
-        const classInfoResultsByCampus = await Promise.all(tasks);
-
-        const campusErrors = [];
-        let mergedClassInfos: (
-          | {
-              status: "success";
-              data: ClassInfo;
-            }
-          | {
-              status: "error";
-              error: string;
-              data: ShortClassInfo;
-            }
-        )[] = [];
-        // Loop through each campus and report errors or concat with classInfos
-        for (const {
-          campus,
-          result: [campusError, campusResults],
-        } of classInfoResultsByCampus) {
-          if (campusError !== null) {
-            campusErrors.push(
-              `Something went wrong, please try again. ${campusError.toString()}`
-            );
-          } else {
-            const formattedResults = campusResults.map((result, index) => {
-              // OpenCourseAPI returns success but data: null when a request was valid but class was not found.
-              if (result.status === "success" && result.data === null) {
-                // HACK: Turn the result into an error
-                return {
-                  status: "error",
-                  error: "No class found with given CRN.",
-                  data: classesDataByCampus[campus][index],
-                } as { status: "error"; error: string; data: ShortClassInfo };
-              }
-
-              if (result.status === "success") return result;
-
-              return {
-                ...result,
-                // If there was an error, put the short class info to identify which class this was
-                // Because OpenCourseAPI doesn't specify which request failed
-                data: classesDataByCampus[campus][index] as ShortClassInfo,
-              };
-            });
-
-            mergedClassInfos = mergedClassInfos.concat(formattedResults);
-          }
-        }
-
-        state.value = "loaded";
-        possibleClasses.value = mergedClassInfos;
-        classesError.value =
-          campusErrors.length !== 0 ? campusErrors.join("\n") : null;
-      } else if (apiError !== null && apiError.code !== 404) {
-        state.value = "loaded";
-        classesError.value = `Something went wrong, please try again. ${apiError.toString()}`;
+      if (userStore.state.isSignedIn === false) {
+        state.value = "invalid";
+        classesError.value = "You are not signed in.";
         possibleClasses.value = null;
-      } else {
-        state.value = "loaded";
-        classesError.value = `No classes found for user.`;
-        possibleClasses.value = null;
+        return;
       }
+
+      const registeredClasses = userStore.state.registeredClasses;
+
+      if (registeredClasses === null) {
+        state.value = "invalid";
+        classesError.value = "You are not registered to any class.";
+        possibleClasses.value = null;
+        return;
+      }
+
+      const classesDataByCampus = groupBy(
+        registeredClasses,
+        (shortClassInfo) => shortClassInfo.campus
+      );
+      const tasks = Object.entries(classesDataByCampus).map(
+        async ([campus, shortClassesInfo]) => {
+          const classesResults = await Promise.all(
+            shortClassesInfo.map((shortClassInfo) =>
+              getClassInfo(
+                campus as CampusId,
+                shortClassInfo.crn,
+                shortClassInfo.year,
+                shortClassInfo.term
+              )
+            )
+          );
+
+          return {
+            campus,
+            result: classesResults,
+          };
+        }
+      );
+
+      const classInfoResultsByCampus = await Promise.all(tasks);
+
+      const campusErrors = [];
+      let mergedClassInfos: (
+        | {
+            status: "success";
+            data: ClassInfo;
+          }
+        | {
+            status: "error";
+            error: string;
+            data: ShortClassInfo;
+          }
+      )[] = [];
+      // Loop through each campus and report errors or concat with classInfos
+      for (const {
+        campus,
+        result: campusResults,
+      } of classInfoResultsByCampus) {
+        const formattedResults = campusResults.map(([error, result], index) => {
+          if (error !== null) {
+            return {
+              status: "error",
+              error: error.toString(),
+              data: classesDataByCampus[campus][index],
+            } as { status: "error"; error: string; data: ShortClassInfo };
+          }
+
+          return {
+            status: "success",
+            // If there was an error, put the short class info to identify which class this was
+            // Because OpenCourseAPI doesn't specify which request failed
+            data: { ...result, ...classesDataByCampus[campus][index] },
+          } as { status: "success"; data: ClassInfo };
+        });
+
+        mergedClassInfos = mergedClassInfos.concat(formattedResults);
+      }
+
+      state.value = "loaded";
+      possibleClasses.value = mergedClassInfos;
+      classesError.value =
+        campusErrors.length !== 0 ? campusErrors.join("\n") : null;
     };
 
-    onMounted(getClasses);
+    watchEffect(getClasses);
 
     return {
       email,

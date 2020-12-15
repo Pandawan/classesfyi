@@ -22,8 +22,8 @@
       Link Email
     </button>
   </form>
-  <div v-if="error" class="error">{{ error.toString() }}</div>
-  <div v-if="success" class="success">{{ success.toString() }}</div>
+  <div v-if="error" class="error">{{ error }}</div>
+  <div v-if="success" class="success">{{ success }}</div>
 </template>
 
 <script lang="ts">

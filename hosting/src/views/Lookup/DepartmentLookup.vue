@@ -27,7 +27,7 @@
     </SearchableList>
   </div>
   <div v-else>
-    <p>{{ error ?? 'Something went wrong, please try again.' }}</p>
+    <p>{{ error ?? "Something went wrong, please try again." }}</p>
   </div>
 </template>
 
@@ -41,8 +41,13 @@ import {
   getDepartmentInfo,
 } from "/@/utilities/openCourseApi";
 import { APIError } from "/@/utilities/APIError";
-import { availableCampuses, isAvailableCampus } from "/@/utilities/campus";
+import {
+  availableCampuses,
+  CampusId,
+  isAvailableCampus,
+} from "/@/utilities/campus";
 import BackButton from "/@/components/BackButton.vue";
+import { getOrFetchTerm } from "/@/stores/term";
 
 // TODO: Fuzzy search
 const searchFilter = (item, query) => {
@@ -62,7 +67,7 @@ export default defineComponent({
   },
   setup(props) {
     const route = useRoute();
-    const campusId = computed(() => route.params.campusId as string);
+    const campusId = computed(() => route.params.campusId as CampusId);
     const campusName = computed<string>(
       () => availableCampuses[campusId.value]
     );
@@ -74,9 +79,12 @@ export default defineComponent({
 
     const getDepartment = async () => {
       if (isAvailableCampus(campusId.value)) {
+        const { year, term } = await getOrFetchTerm(campusId.value);
         const [err, dept] = await getDepartmentInfo(
           campusId.value,
-          departmentId.value
+          departmentId.value,
+          year,
+          term
         );
 
         if (err === null) {

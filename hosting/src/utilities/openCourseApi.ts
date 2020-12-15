@@ -2,6 +2,31 @@ import { APIError } from "./APIError";
 import { CampusId } from "./campus";
 
 /* -------------------------------------
+    TERM
+------------------------------------- */
+interface TermData {
+  year: number;
+  term: "summer" | "fall" | "winter" | "spring";
+  code: string;
+}
+
+export async function getCurrentTermData(
+  campusId: CampusId,
+): Promise<[APIError, null] | [null, TermData]> {
+  const res = await fetch(`https://opencourse.dev/${campusId}/`);
+
+  if (res.status === 200) {
+    const data = await res.json();
+
+    const currentTermData = data.current;
+    return [null, currentTermData];
+  } else {
+    const error = (await res.json()).error;
+    return [new APIError(res.status, error), null];
+  }
+}
+
+/* -------------------------------------
     DEPARTMENT
 ------------------------------------- */
 
@@ -16,8 +41,15 @@ export interface DepartmentInfo {
 
 export async function getCampusDepartments(
   campusId: CampusId,
+  year?: number,
+  term?: string,
 ): Promise<[APIError, null] | [null, Array<DepartmentInfo>]> {
-  const res = await fetch(`https://opencourse.dev/${campusId}/depts`);
+  let url = `https://opencourse.dev/${campusId}/depts`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+
+  const res = await fetch(url);
 
   if (res.status === 200) {
     const data = await res.json();
@@ -34,10 +66,15 @@ export async function getCampusDepartments(
 export async function getDepartmentInfo(
   campusId: CampusId,
   departmentId: string,
+  year?: number,
+  term?: string,
 ): Promise<[APIError, null] | [null, DepartmentInfo]> {
-  const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}`,
-  );
+  let url = `https://opencourse.dev/${campusId}/depts/${departmentId}`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+
+  const res = await fetch(url);
 
   if (res.status === 200) {
     const data = await res.json();
@@ -67,10 +104,15 @@ export interface CourseInfo {
 export async function getDepartmentCourses(
   campusId: CampusId,
   departmentId: string,
+  year?: number,
+  term?: string,
 ): Promise<[APIError, null] | [null, CourseInfo[]]> {
-  const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses`,
-  );
+  let url = `https://opencourse.dev/${campusId}/depts/${departmentId}/courses`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+
+  const res = await fetch(url);
 
   if (res.status === 200) {
     const data = await res.json();
@@ -95,10 +137,15 @@ export async function getCourseInfo(
   campusId: CampusId,
   departmentId: string,
   courseId: string,
+  year?: number,
+  term?: string,
 ): Promise<[APIError, null] | [null, CourseInfo]> {
-  const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}`,
-  );
+  let url =
+    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+  const res = await fetch(url);
 
   if (res.status === 200) {
     const data = await res.json();
@@ -166,10 +213,15 @@ export async function getCourseClasses(
   campusId: CampusId,
   departmentId: string,
   courseId: string,
+  year?: number,
+  term?: string,
 ): Promise<[APIError, null] | [null, ClassInfo[]]> {
-  const res = await fetch(
-    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}/classes`,
-  );
+  let url =
+    `https://opencourse.dev/${campusId}/depts/${departmentId}/courses/${courseId}/classes`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+  const res = await fetch(url);
 
   if (res.status === 200) {
     const data = await res.json();
@@ -193,10 +245,14 @@ export async function getCourseClasses(
 export async function getClassInfo(
   campusId: CampusId,
   CRN: number,
+  year?: number,
+  term?: string,
 ): Promise<[APIError, null] | [null, ClassInfo | undefined]> {
-  const res = await fetch(
-    `https://opencourse.dev/${campusId}/classes/${CRN}`,
-  );
+  let url = `https://opencourse.dev/${campusId}/classes/${CRN}`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+  const res = await fetch(url);
 
   if (res.status === 200) {
     const classInfo = await res.json();
@@ -222,6 +278,8 @@ export async function getClassInfo(
 export async function getClassesInfo(
   campusId: CampusId,
   CRNs: number[],
+  year?: number,
+  term?: string,
 ): Promise<
   [APIError, null] | [
     null,
@@ -231,20 +289,22 @@ export async function getClassesInfo(
     >,
   ]
 > {
-  const res = await fetch(
-    `https://opencourse.dev/${campusId}/classes/`,
-    {
-      method: "post",
-      body: JSON.stringify({
-        resources: CRNs.map((crn) => ({
-          CRN: crn,
-        })),
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+  let url = `https://opencourse.dev/${campusId}/classes`;
+  if (year !== undefined && term !== undefined) {
+    url += `?year=${year}&quarter=${term}`;
+  }
+
+  const res = await fetch(url, {
+    method: "post",
+    body: JSON.stringify({
+      resources: CRNs.map((crn) => ({
+        CRN: crn,
+      })),
+    }),
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+  });
 
   if (res.status === 200) {
     const response = await res.json();
