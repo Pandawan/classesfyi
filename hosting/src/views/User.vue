@@ -14,7 +14,6 @@
         v-if="possibleClasses !== null"
         class="right-align"
         :email="email"
-        @success="getClasses"
       />
     </div>
     <div v-if="classesError !== null">
@@ -102,7 +101,7 @@ export default defineComponent({
   setup(props) {
     // TODO: Cleanup
     const email = computed(() => userStore.state.email);
-    const state = ref<"loading" | "loaded" | "invalid">("loading");
+    const state = ref<"loading" | "loaded">("loading");
 
     const possibleClasses = ref<
       | (
@@ -122,7 +121,7 @@ export default defineComponent({
 
     const getClasses = async () => {
       if (userStore.state.isSignedIn === false) {
-        state.value = "invalid";
+        state.value = "loaded";
         classesError.value = "You are not signed in.";
         possibleClasses.value = null;
         return;
@@ -131,7 +130,7 @@ export default defineComponent({
       const registeredClasses = userStore.state.registeredClasses;
 
       if (registeredClasses === null) {
-        state.value = "invalid";
+        state.value = "loaded";
         classesError.value = "You are not registered to any class.";
         possibleClasses.value = null;
         return;

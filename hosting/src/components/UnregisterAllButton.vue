@@ -12,10 +12,11 @@
 </template>
 
 <script lang="ts">
-import { userStore } from "../stores/user";
+import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
-import { ClassInfo } from "../utilities/openCourseApi";
-import { unregisterFromAllClasses } from "../utilities/classesFyiApi";
+import { ClassInfo } from "/@/utilities/openCourseApi";
+import { unregisterFromAllClasses } from "/@/utilities/classesFyiApi";
+import fire from "/@/utilities/fire";
 
 export default defineComponent({
   name: "UnregisterAllButton",
@@ -31,17 +32,19 @@ export default defineComponent({
       error.value = null;
       state.value = "loading";
 
-      const [apiError, result] = await unregisterFromAllClasses(
-        userStore.state.email
-      );
+      try {
+        const userDoc = await fire
+          .firestore()
+          .collection("users")
+          .doc(userStore.state.email);
 
-      if (result !== null) {
-        // TODO: Change API to return list of registered/duplicated classes so client can say when they were not registered
-        state.value = "success";
-        emit("success");
-      } else {
+        // User doc SHOULD exist, no way to see the unregister all button otherwise
+        if ((await userDoc.get()).exists) {
+          await userDoc.delete();
+        }
+      } catch (err) {
         state.value = "initial";
-        error.value = `Something went wrong, please try again. ${apiError.toString()}`;
+        error.value = `Something went wrong, please try again. ${err.toString()}`;
       }
     };
 

@@ -1,16 +1,25 @@
 <template>
   <div class="class">
-    <h2 class="title">
-      {{ classData.department }}{{ classData.course }} ({{ classData.CRN }})
-    </h2>
-    <div class="tags">
-      <Tag v-if="isOpeningUp" color="yellow">
-        {{ classData.seats }} seat is opening up
-      </Tag>
-      <Tag v-else :color="statusColors[classData['status']]" class="status-tag">
-        {{ classData.status }}
-      </Tag>
-      <Tag v-if="isOnline">Online</Tag>
+    <div class="class-header">
+      <div>
+        <h2 class="title">
+          {{ classData.department }}{{ classData.course }} ({{ classData.CRN }})
+        </h2>
+        <div class="tags">
+          <Tag v-if="isOpeningUp" color="yellow">
+            {{ classData.seats }} seat is opening up
+          </Tag>
+          <Tag
+            v-else
+            :color="statusColors[classData['status']]"
+            class="status-tag"
+          >
+            {{ classData.status }}
+          </Tag>
+          <Tag v-if="isOnline">Online</Tag>
+        </div>
+      </div>
+      <slot :classData="classData" />
     </div>
     <div class="seats">
       <div v-if="classData.seats !== 0">
@@ -22,7 +31,6 @@
       <div v-if="classData.seats === 0 && classData.wait_seats === 0">
         No open or waitlist seats available.
       </div>
-      <slot :classData="classData"></slot>
     </div>
     <div>Duration: {{ classData.start }} - {{ classData.end }}</div>
     <div>Units: {{ classData.units }}</div>
@@ -73,6 +81,14 @@ export default {
 </script>
 
 <style scoped>
+@media (min-width: 500px) {
+  .class-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
 .title {
   margin-bottom: 0.25rem;
 }

@@ -12,11 +12,13 @@
 </template>
 
 <script lang="ts">
-import { userStore } from "../stores/user";
+import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
-import { unregisterForClass } from "../utilities/classesFyiApi";
-import { ClassInfo } from "../utilities/openCourseApi";
-import { getOrFetchTerm } from "../stores/term";
+import { unregisterForClass } from "/@/utilities/classesFyiApi";
+import { ClassInfo } from "/@/utilities/openCourseApi";
+import { getOrFetchTerm } from "/@/stores/term";
+import fire from "/@/utilities/fire";
+import firebase from "firebase/app";
 
 export default defineComponent({
   name: "UnregisterButton",
@@ -39,22 +41,38 @@ export default defineComponent({
       state.value = "loading";
 
       const { year, term } = await getOrFetchTerm(props.classInfo.campus);
-      const [apiError, result] = await unregisterForClass(
-        userStore.state.email,
-        {
-          campus: props.classInfo.campus,
-          year,
-          term,
-          crn: props.classInfo.CRN,
-        }
-      );
 
-      if (result !== null) {
-        // TODO: Change API to return list of registered/duplicated classes so client can say when they were not registered
-        state.value = "success";
-      } else {
+      try {
+        const userDoc = await fire
+          .firestore()
+          .collection("users")
+          .doc(userStore.state.email);
+
+        // User doc SHOULD exist, no way to see the unregister button otherwise
+        if ((await userDoc.get()).exists) {
+          await userDoc.update({
+            registered_classes: firebase.firestore.FieldValue.arrayRemove({
+              campus: props.classInfo.campus,
+              year,
+              term,
+              crn: props.classInfo.CRN,
+            }),
+          });
+
+          // If user is no longer registered to any class, delete the user doc
+          const newRegisteredClasses = (await userDoc.get()).data()
+            .registered_classes;
+          if (
+            !newRegisteredClasses ||
+            (Array.isArray(newRegisteredClasses) &&
+              newRegisteredClasses.length === 0)
+          ) {
+            await userDoc.delete();
+          }
+        }
+      } catch (err) {
         state.value = "initial";
-        error.value = `Something went wrong, please try again. ${apiError.toString()}`;
+        error.value = `Something went wrong, please try again. ${err.toString()}`;
       }
     };
 

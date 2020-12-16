@@ -23,8 +23,16 @@
     >
       <div class="class">
         <ClassView :classData="classInfo">
-          <div v-if="classInfo.wait_seats === 0">
+          <div
+            v-if="
+              classInfo.isAlreadyRegistered === false &&
+              classInfo.wait_seats === 0
+            "
+          >
             <RegisterButton :classInfo="classInfo" />
+          </div>
+          <div v-else-if="classInfo.isAlreadyRegistered === true">
+            You are already registered for this class.
           </div>
         </ClassView>
       </div>
@@ -58,6 +66,7 @@ import {
 import RegisterButton from "/@/components/RegisterButton.vue";
 import BackButton from "/@/components/BackButton.vue";
 import { getOrFetchTerm } from "/@/stores/term";
+import { userStore } from "/@/stores/user";
 
 const searchFilter = (item, query) => {
   // Search by CRN or instructor name
@@ -90,7 +99,9 @@ export default defineComponent({
     const courseId = computed(() => route.params.courseId as string);
 
     let courseInfo = ref<CourseInfo | null>(null);
-
+    let classes = ref<(ClassInfo & { isAlreadyRegistered: boolean })[] | null>(
+      null
+    );
     let error = ref<APIError | null>(null);
 
     const getInfoForCourse = async () => {
@@ -111,8 +122,6 @@ export default defineComponent({
       }
     };
 
-    let classes = ref<ClassInfo[] | null>(null);
-
     const getClasses = async () => {
       if (isAvailableCampus(campusId.value)) {
         const { year, term } = await getOrFetchTerm(campusId.value);
@@ -124,8 +133,27 @@ export default defineComponent({
           term
         );
 
+        console.log(userStore.state.registeredClasses);
+
+        const classesWithMetadata = crs.map((classInfo) => ({
+          ...classInfo,
+          // Is already registered IF
+          isAlreadyRegistered:
+            // 1. User is already registered to SOME classes
+            userStore.state.registeredClasses !== null &&
+            // 2. The registered classes contains the given class
+            userStore.state.registeredClasses.findIndex(
+              // TODO: Make a generic "class compare" function
+              (registeredClass) =>
+                registeredClass.crn === classInfo.CRN &&
+                registeredClass.term === term &&
+                registeredClass.year === year &&
+                registeredClass.campus === campusId.value
+            ) !== -1,
+        }));
+
         if (err === null) {
-          classes.value = crs;
+          classes.value = classesWithMetadata;
           error.value = null;
         } else {
           classes.value = null;

@@ -16,7 +16,9 @@ import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "/@/utilities/openCourseApi";
 import { registerForClass } from "/@/utilities/classesFyiApi";
-import { getOrFetchTerm } from "../stores/term";
+import { getOrFetchTerm } from "/@/stores/term";
+import fire from "/@/utilities/fire";
+import firebase from "firebase/app";
 
 export default defineComponent({
   name: "RegisterButton",
@@ -39,20 +41,42 @@ export default defineComponent({
       state.value = "loading";
 
       const { year, term } = await getOrFetchTerm(props.classInfo.campus);
-      const [apiError, result] = await registerForClass(userStore.state.email, {
-        campus: props.classInfo.campus,
-        year,
-        term,
-        crn: props.classInfo.CRN,
-      });
 
-      if (result !== null) {
-        // TODO: Change API to return list of registered/duplicated classes so client can say when the user is already registered
-        state.value = "success";
-      } else {
+      try {
+        const userDoc = await fire
+          .firestore()
+          .collection("users")
+          .doc(userStore.state.email);
+
+        // If user already exists, update with an array union (append element to array)
+        if ((await userDoc.get()).exists) {
+          await userDoc.update({
+            registered_classes: firebase.firestore.FieldValue.arrayUnion({
+              campus: props.classInfo.campus,
+              year,
+              term,
+              crn: props.classInfo.CRN,
+            }),
+          });
+        } else {
+          // If user does not exist, set registered class with the new one
+          await userDoc.set({
+            registered_classes: [
+              {
+                campus: props.classInfo.campus,
+                year,
+                term,
+                crn: props.classInfo.CRN,
+              },
+            ],
+          });
+        }
+      } catch (err) {
         state.value = "initial";
-        error.value = `Something went wrong, please try again. ${apiError.toString()}`;
+        error.value = `Something went wrong, please try again. ${err.toString()}`;
       }
+
+      state.value = "success";
     };
 
     return { state, error, register };
