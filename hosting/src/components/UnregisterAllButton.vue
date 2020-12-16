@@ -15,7 +15,6 @@
 import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "/@/utilities/openCourseApi";
-import { unregisterFromAllClasses } from "/@/utilities/classesFyiApi";
 import fire from "/@/utilities/fire";
 
 export default defineComponent({

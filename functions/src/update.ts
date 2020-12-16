@@ -7,12 +7,6 @@ import { groupBy } from "./utilities/groupBy";
 import { sendEmail } from "./utilities/sendEmail";
 import { uniqWith } from "./utilities/uniqWith";
 
-export const test = functions.https.onRequest(async (req, resp) => {
-  console.log(JSON.stringify(await getAllClasses()));
-  await updateClassesData.run(undefined, undefined);
-  resp.send();
-});
-
 /**
  * Register the given user for updates from the given classes.
  * 

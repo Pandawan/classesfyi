@@ -49,7 +49,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref, watchEffect } from "vue";
-import { getUserClasses, ShortClassInfo } from "/@/utilities/classesFyiApi";
+import { ShortClassInfo } from "/@/utilities/classInfo";
 import SearchableList from "/@/components/SearchableList.vue";
 import {
   ClassInfo,

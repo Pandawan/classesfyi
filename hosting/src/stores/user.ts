@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 import fire from "/@/utilities/fire";
-import { ShortClassInfo } from "/@/utilities/classesFyiApi";
+import { ShortClassInfo } from "/@/utilities/classInfo";
 
 interface UserStoreState {
   isSignedIn: boolean;

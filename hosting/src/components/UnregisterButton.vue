@@ -14,7 +14,6 @@
 <script lang="ts">
 import { userStore } from "/@/stores/user";
 import { defineComponent, PropType, ref } from "vue";
-import { unregisterForClass } from "/@/utilities/classesFyiApi";
 import { ClassInfo } from "/@/utilities/openCourseApi";
 import { getOrFetchTerm } from "/@/stores/term";
 import fire from "/@/utilities/fire";
