@@ -16,22 +16,6 @@
     "predeploy": ["npm --prefix \"$PROJECT_DIR/hosting\" run build"],
     "rewrites": [
       {
-        "source": "/api/registerClasses",
-        "function": "registerClasses"
-      },
-      {
-        "source": "/api/unregisterClasses",
-        "function": "unregisterClasses"
-      },
-      {
-        "source": "/api/unregisterAllClasses",
-        "function": "unregisterAllClasses"
-      },
-      {
-        "source": "/api/getUserClasses",
-        "function": "getUserClasses"
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }

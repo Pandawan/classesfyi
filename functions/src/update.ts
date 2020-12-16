@@ -8,9 +8,11 @@ import { sendEmail } from "./utilities/sendEmail";
 import { uniqWith } from "./utilities/uniqWith";
 
 /**
- * Register the given user for updates from the given classes.
+ * Update the class data for classes that are registered 
+ * and send emails to those registered if necessary.
  * 
- * This is a pubsub scheduled job, which is automatically handled by Firebase.
+ * This is a pubsub scheduled job, which is automatically handled by Firebase 
+ * and is run every 15 minutes based on the given schedule.
  */
 export const updateClassesData = functions.pubsub.schedule("every 15 minutes")
   .onRun(
@@ -188,6 +190,7 @@ async function getClassesWithImportantChanges() {
     (snapshot) => snapshot.campus,
   );
 
+  // TODO: Run this as a Promise.all(tasks) instead to optimize
   // TODO: this could be optimized by storing classes by CRN in a map rather than as an array
   for (
     const [campus, classInfos] of Object.entries(
