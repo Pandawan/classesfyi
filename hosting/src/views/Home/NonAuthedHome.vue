@@ -39,6 +39,7 @@ export default defineComponent({
     const success = ref<string | null>(null);
 
     const submit = async () => {
+      error.value = null;
       try {
         userStore.setEmail(emailInput.value);
 
