@@ -336,6 +336,7 @@ function getImportantChanges(
   if (previousData === undefined) return null;
 
   const changes: ClassDataChanges = {};
+  let hasImportantChange: boolean = false;
 
   // Seats is no longer 0
   if (
@@ -343,6 +344,7 @@ function getImportantChanges(
     previousData.seats === 0 && updatedClassData.seats !== 0 &&
     updatedClassData.seats > 0
   ) {
+    hasImportantChange = true;
     changes.seats = {
       previous: previousData.seats,
       updated: updatedClassData.seats,
@@ -355,6 +357,7 @@ function getImportantChanges(
     previousData.waitlist_seats === 0 && updatedClassData.wait_seats !== 0 &&
     updatedClassData.wait_seats > 0
   ) {
+    hasImportantChange = true;
     changes.waitlist_seats = {
       previous: previousData.waitlist_seats,
       updated: updatedClassData.wait_seats,
@@ -366,10 +369,15 @@ function getImportantChanges(
     previousData.status !== updatedClassData.status.toLowerCase() &&
     updatedClassData.status.toLowerCase() !== "full"
   ) {
+    hasImportantChange = true;
     changes.status = {
       previous: previousData.status,
       updated: updatedClassData.status,
     };
+  }
+
+  if (hasImportantChange === false) {
+    return null;
   }
 
   return changes;
