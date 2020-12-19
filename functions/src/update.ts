@@ -88,32 +88,23 @@ async function sendEmailWithChanges(
   const formattedClassesWithChanges = classesWithChanges.map((
     classWithChanges,
   ) => {
-    // TODO: Represent changes as a map rather than an array, this would make it easier to find specific changes
-    // Special case if seat > 0 & waitlist = 0 & class open
+    const { changes } = classWithChanges;
+    // Special case if seat > 0 & class open (implies that waitlist is 0 b/c it wouldn't be closed otherwise)
     // This means a waitlist seat is about to open up
+    // TODO: Need a way to know if waitlist is truly 0 (perhaps changes can keep track of "important" vs "unimportant"?)
     if (
-      classWithChanges.changes.findIndex((change) =>
-          change.type === "seats" && change.updated > 0
-        ) !== -1 &&
-      classWithChanges.changes.findIndex((change) =>
-          change.type === "waitlist_seats" && change.updated === 0
-        ) !== -1 &&
-      classWithChanges.changes.findIndex((change) =>
-          change.type === "status" && change.updated === "open"
-        ) !== -1
+      changes.seats !== undefined &&
+      changes.seats.updated > 0 &&
+      changes.status !== undefined &&
+      changes.status.updated === "open"
     ) {
-      const seatChange = classWithChanges.changes.find((change) =>
-        change.type === "seats" && change.updated > 0
-      );
-
       return {
         name: `${classWithChanges.department} ${classWithChanges.course}`
           .toUpperCase(),
         crn: classWithChanges.crn,
         campus: classWithChanges.campus,
         changes: [
-          `${seatChange?.updated ??
-            "A"} seat is about to open up in the waitlist (within the next hour).`,
+          "One or more seats are about to open up in the waitlist (within the next hour or so). We'll email you again once they do.",
         ],
       };
     }
@@ -124,25 +115,35 @@ async function sendEmailWithChanges(
         .toUpperCase(),
       crn: classWithChanges.crn,
       campus: classWithChanges.campus,
-      changes: classWithChanges.changes
-        .map((change) => {
-          if (change.type === "seats") {
+      // TODO: Move this to another function
+      changes: Object.entries(changes)
+        .map(([type, change]) => {
+          // Skip over undefined values
+          if (change === undefined) {
+            return undefined;
+          }
+          // Description of seats change
+          if (type === "seats") {
             if (change.updated === 1) {
               return `There is 1 seat available (was ${change.previous})`;
             } else {
               return `There are ${change.updated} seats available (was ${change.previous})`;
             }
-          } else if (change.type === "status") {
+          }
+          // Description of status change
+          if (type === "status") {
             return `Class status is now ${change.updated} (was ${change.previous}).`;
-          } else if (change.type === "waitlist_seats") {
+          }
+          // Description of waitlist change
+          if (type === "waitlist_seats") {
             if (change.updated === 1) {
               return `There is 1 waitlist seat available (was ${change.previous})`;
             } else {
               return `There are ${change.updated} waitlist seats available (was ${change.previous})`;
             }
-          } else {
-            return undefined;
           }
+
+          return undefined;
         })
         .filter((formattedChange) => formattedChange !== undefined) as string[],
     };
@@ -176,7 +177,7 @@ async function sendEmailWithChanges(
 export interface ClassDataWithChanges extends ClassData {
   department: string;
   course: string;
-  changes: ClassDataChange[];
+  changes: ClassDataChanges;
 }
 
 async function getClassesWithImportantChanges() {
@@ -254,7 +255,7 @@ async function getClassesWithImportantChanges() {
         currentClassData,
         updatedClassData,
       );
-      if (importantChanges.length !== 0) {
+      if (importantChanges !== null) {
         const classDataWithChanges = {
           ...currentClassData,
           department: updatedClassData.dept,
@@ -306,15 +307,20 @@ async function getAllClasses(): Promise<ClassInfo[]> {
   return listOfClasses;
 }
 
-type ClassDataChange = {
-  type: "seats" | "waitlist_seats";
-  previous: number;
-  updated: number;
-} | {
-  type: "status";
-  previous: string;
-  updated: string;
-};
+interface ClassDataChanges {
+  seats?: {
+    previous: number;
+    updated: number;
+  };
+  waitlist_seats?: {
+    previous: number;
+    updated: number;
+  };
+  status?: {
+    previous: string;
+    updated: string;
+  };
+}
 
 /**
  * Get a list of the important changes since the previous update for the given class data.
@@ -324,12 +330,12 @@ type ClassDataChange = {
 function getImportantChanges(
   classData: ClassData,
   updatedClassData: OpenCourseClassData,
-): ClassDataChange[] {
+): ClassDataChanges | null {
   const previousData = classData.previous_data;
 
-  if (previousData === undefined) return [];
+  if (previousData === undefined) return null;
 
-  const changes: ClassDataChange[] = [];
+  const changes: ClassDataChanges = {};
 
   // Seats is no longer 0
   if (
@@ -337,11 +343,10 @@ function getImportantChanges(
     previousData.seats === 0 && updatedClassData.seats !== 0 &&
     updatedClassData.seats > 0
   ) {
-    changes.push({
-      type: "seats",
+    changes.seats = {
       previous: previousData.seats,
       updated: updatedClassData.seats,
-    });
+    };
   }
 
   // Waitlist seats is no longer 0
@@ -350,11 +355,10 @@ function getImportantChanges(
     previousData.waitlist_seats === 0 && updatedClassData.wait_seats !== 0 &&
     updatedClassData.wait_seats > 0
   ) {
-    changes.push({
-      type: "waitlist_seats",
+    changes.waitlist_seats = {
       previous: previousData.waitlist_seats,
       updated: updatedClassData.wait_seats,
-    });
+    };
   }
 
   // Status has changed and is not full anymore
@@ -362,11 +366,10 @@ function getImportantChanges(
     previousData.status !== updatedClassData.status.toLowerCase() &&
     updatedClassData.status.toLowerCase() !== "full"
   ) {
-    changes.push({
-      type: "status",
+    changes.status = {
       previous: previousData.status,
       updated: updatedClassData.status,
-    });
+    };
   }
 
   return changes;
