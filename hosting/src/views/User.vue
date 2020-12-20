@@ -4,7 +4,7 @@
       <BackButton />
       <span>User {{ email }}</span>
     </h2>
-    <SignOutButton class="right-align" />
+    <SignOutButton class="right-align" v-if="isSignedIn" />
   </div>
   <p v-if="state === 'loading'">Loading...</p>
   <section v-else-if="state === 'loaded'">
@@ -102,6 +102,7 @@ export default defineComponent({
     // TODO: Cleanup
     const email = computed(() => userStore.state.email);
     const state = ref<"loading" | "loaded">("loading");
+    const isSignedIn = computed(() => userStore.state.isSignedIn);
 
     const possibleClasses = ref<
       | (
@@ -208,6 +209,7 @@ export default defineComponent({
     watchEffect(getClasses);
 
     return {
+      isSignedIn,
       email,
       possibleClasses,
       classesError,

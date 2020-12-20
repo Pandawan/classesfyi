@@ -1,38 +1,50 @@
 <template>
-  <p>
-    Ready to start? Let's link your email.
-    <span class="tooltip" tabindex="0">
-      Why do you need this?
-      <span class="tooltip-text">
-        Linking your email lets us verify it and send you updates about your
-        classes.
+  <div>
+    <p>
+      Ready to start? Let's link your email.
+      <span class="tooltip" tabindex="0">
+        Why do you need this?
+        <span class="tooltip-text">
+          Linking your email lets us verify it and send you updates about your
+          classes.
+        </span>
       </span>
-    </span>
-  </p>
-  <form action="#" @submit.prevent="submit">
-    <input
-      v-model="emailInput"
-      @input="error = null"
-      type="email"
-      name="email"
-      placeholder="Enter your email..."
-      :class="error !== null ? 'error' : ''"
-    />
-    <button type="submit" :class="error !== null ? 'button error' : 'button'">
-      Link Email
-    </button>
-  </form>
-  <div v-if="error" class="error">{{ error }}</div>
-  <div v-if="success" class="success">{{ success }}</div>
+    </p>
+    <form action="#" @submit.prevent="submit">
+      <input
+        v-model="emailInput"
+        @input="error = null"
+        type="email"
+        name="email"
+        placeholder="Enter your email..."
+        :class="error !== null ? 'error' : ''"
+      />
+      <button type="submit" :class="error !== null ? 'button error' : 'button'">
+        Link Email
+      </button>
+    </form>
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="success" class="success">{{ success }}</div>
+  </div>
+  <div class="class-select">
+    <h2>Just looking for class information?</h2>
+    <label>
+      <!-- TODO: Previous term viewing (termStore can have isCurrentTerm to display/hide register button) -->
+      <p>Choose a campus and look for classes</p>
+      <CampusSelect />
+    </label>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import { userStore } from "/@/stores/user";
 import fire from "/@/utilities/fire";
+import CampusSelect from "/@/components/CampusSelect.vue";
 
 export default defineComponent({
   name: "NonAuthedHome",
+  components: { CampusSelect },
   setup() {
     const emailInput = ref<string | null>(userStore.state.email ?? null);
     const error = ref<string | null>(null);
@@ -62,6 +74,14 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.class-select {
+  margin-top: 1.5rem;
+}
+
+.class-select h2 {
+  margin-bottom: 0.5rem;
+}
+
 .tooltip {
   position: relative;
   display: inline-block;

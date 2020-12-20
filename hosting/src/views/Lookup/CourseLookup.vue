@@ -23,16 +23,22 @@
     >
       <div class="class">
         <ClassView :classData="classInfo">
-          <div
-            v-if="
-              classInfo.isAlreadyRegistered === false &&
-              classInfo.wait_seats === 0
-            "
-          >
-            <RegisterButton :classInfo="classInfo" />
+          <div v-if="isSignedIn">
+            <div
+              v-if="
+                classInfo.isAlreadyRegistered === false &&
+                classInfo.wait_seats === 0
+              "
+            >
+              <RegisterButton :classInfo="classInfo" />
+            </div>
+            <div v-else-if="classInfo.isAlreadyRegistered === true">
+              You are already registered for this class.
+            </div>
           </div>
-          <div v-else-if="classInfo.isAlreadyRegistered === true">
-            You are already registered for this class.
+          <div v-else>
+            <router-link to="/">Link your email</router-link> to register for
+            updates.
           </div>
         </ClassView>
       </div>
@@ -97,6 +103,8 @@ export default defineComponent({
     );
     const departmentId = computed(() => route.params.departmentId as string);
     const courseId = computed(() => route.params.courseId as string);
+
+    const isSignedIn = computed(() => userStore.state.isSignedIn);
 
     let courseInfo = ref<CourseInfo | null>(null);
     let classes = ref<(ClassInfo & { isAlreadyRegistered: boolean })[] | null>(
@@ -169,6 +177,7 @@ export default defineComponent({
     onMounted(getClasses);
 
     return {
+      isSignedIn,
       campusId,
       campusName,
       departmentId,

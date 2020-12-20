@@ -5,11 +5,7 @@
       <label>
         <!-- TODO: Previous term viewing (termStore can have isCurrentTerm to display/hide register button) -->
         <p>Choose a campus and look for classes</p>
-        <select v-model="campusSelect">
-          <option v-for="(name, id) in availableCampuses" :value="id" :key="id">
-            {{ name }}
-          </option>
-        </select>
+        <CampusSelect />
       </label>
     </div>
     <div>
@@ -25,32 +21,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
-import { useRouter } from "vue-router";
-import { refreshCurrentTermData } from "/@/stores/term";
-import { availableCampuses, CampusId } from "/@/utilities/campus";
+import { defineComponent } from "vue";
+import CampusSelect from "/@/components/CampusSelect.vue";
 
 export default defineComponent({
   name: "AuthedHome",
-  setup() {
-    const campusSelect = ref<CampusId | null>(null);
-
-    const router = useRouter();
-
-    const navigateToCampusLookup = () => {
-      // Refresh the term data (just in case) when selecting a campus
-      refreshCurrentTermData(campusSelect.value);
-
-      router.push(`/lookup/${campusSelect.value}`);
-    };
-
-    watch(campusSelect, navigateToCampusLookup);
-
-    return {
-      availableCampuses,
-      campusSelect,
-    };
-  },
+  components: { CampusSelect },
 });
 </script>
 
