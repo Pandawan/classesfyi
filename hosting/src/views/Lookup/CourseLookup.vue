@@ -24,13 +24,12 @@
       <div class="class">
         <ClassView :classData="classInfo">
           <div v-if="isSignedIn">
-            <div
-              v-if="
-                classInfo.isAlreadyRegistered === false &&
-                classInfo.wait_seats === 0
-              "
-            >
-              <RegisterButton :classInfo="classInfo" />
+            <div v-if="classInfo.isAlreadyRegistered === false">
+              <!-- Show "Pre-Register" if the waitlist is not already full -->
+              <RegisterButton
+                :classInfo="classInfo"
+                :preRegister="classInfo.wait_seats !== 0"
+              />
             </div>
             <div v-else-if="classInfo.isAlreadyRegistered === true">
               You are already registered for this class.

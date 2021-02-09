@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <button v-if="state === 'initial'" @click="register" class="button">
-      Register for Updates
+      {{ buttonText }}
     </button>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="state === 'loading'">Loading...</div>
@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { userStore } from "/@/stores/user";
-import { defineComponent, PropType, ref } from "vue";
+import { computed, defineComponent, PropType, ref } from "vue";
 import { ClassInfo } from "/@/utilities/openCourseApi";
 import { getOrFetchTerm } from "/@/stores/term";
 import fire from "/@/utilities/fire";
@@ -26,8 +26,18 @@ export default defineComponent({
       type: Object as PropType<ClassInfo>,
       required: true,
     },
+    preRegister: {
+      type: Boolean as PropType<Boolean>,
+      required: false,
+      default: false,
+    },
   },
   setup(props) {
+    const buttonText = computed<string>(() =>
+      props.preRegister === true
+        ? "Pre-Register for Updates"
+        : "Register for Updates"
+    );
     const state = ref<"initial" | "loading" | "success" | "error">("initial");
     const error = ref<string | null>(null);
 
@@ -78,7 +88,7 @@ export default defineComponent({
       state.value = "success";
     };
 
-    return { state, error, register };
+    return { state, error, register, buttonText };
   },
 });
 </script>
