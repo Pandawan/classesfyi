@@ -4,5 +4,5 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 export const store = admin.firestore();
 
-export { test, updateClassesData } from "./update";
+export { updateClassesData } from "./update";
 export { cleanupUnusedClasses } from "./cleanup";
