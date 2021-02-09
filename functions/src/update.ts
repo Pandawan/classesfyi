@@ -7,6 +7,11 @@ import { groupBy } from "./utilities/groupBy";
 import { sendEmail } from "./utilities/sendEmail";
 import { uniqWith } from "./utilities/uniqWith";
 
+export const test = functions.https.onRequest(async (req, res) => {
+  await updateClassesData.run(undefined, undefined);
+  res.send("Done");
+});
+
 /**
  * Update the class data for classes that are registered 
  * and send emails to those registered if necessary.
@@ -21,7 +26,7 @@ export const updateClassesData = functions.pubsub.schedule("every 15 minutes")
       const classesWithChanges = await getClassesWithImportantChanges();
 
       if (classesWithChanges.length === 0) {
-        functions.logger.debug("No class needed updates.");
+        functions.logger.log("No class needed updates.");
         return;
       }
 
@@ -186,20 +191,28 @@ async function getClassesWithImportantChanges() {
   // A mapping of class reference and the changes since the previous update
   const classesChanges: ClassDataWithChanges[] = [];
 
-  const currentClassesByCampus = groupBy(
+  // Group the classes by campus, year, and term so each can have its own batch request
+  const currentClassesByCampusAndYearAndTerm = groupBy(
     classesCollection,
-    (snapshot) => snapshot.campus,
+    (snapshot) => snapshot.campus + snapshot.year + snapshot.term,
   );
 
   // TODO: Run this as a Promise.all(tasks) instead to optimize
   // TODO: this could be optimized by storing classes by CRN in a map rather than as an array
   for (
-    const [campus, classInfos] of Object.entries(
-      currentClassesByCampus,
+    const classInfos of Object.values(
+      currentClassesByCampusAndYearAndTerm,
     )
   ) {
+    const { campus, year, term } = classInfos[0];
+
     // Get all the data for that given campus
-    const updatedClassesData = await getUpdatedClassesData(campus, classInfos);
+    const updatedClassesData = await getUpdatedClassesData(
+      campus,
+      classInfos,
+      year,
+      term as "summer" | "fall" | "winter" | "spring",
+    );
 
     if (updatedClassesData === null) {
       functions.logger.error("No data found for campus", campus);
@@ -214,6 +227,15 @@ async function getClassesWithImportantChanges() {
         functions.logger.error(
           "Encountered an error while fetching updated class data for a specific class",
           updatedClassDataResponse.error,
+        );
+        break;
+      } else if (
+        updatedClassDataResponse.data === null ||
+        updatedClassDataResponse.data === undefined
+      ) {
+        functions.logger.error(
+          "Encountered an error while fetching updated class data for a specific class",
+          "class data was null (it likely does not exist on OpenCourseAPI)",
         );
         break;
       }

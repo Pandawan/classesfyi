@@ -64,7 +64,7 @@ export default defineComponent({
 
         success.value = "Okay! Please check your email for a sign in link.";
       } catch (err) {
-        error.value = err;
+        error.value = err?.message ?? err;
       }
     };
 
