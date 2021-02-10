@@ -4,6 +4,8 @@ Get updates when your classes's seats open up.
 
 ## TODO
 
+- Clean up `functions/update.ts`
+- Add a self-cleanup function that runs once a month to check the current quarter & unregister all user from previous quarters
 - Improve class schedule rendering
 - Better frontend class searching
 - Add loading messages to lookup views; make loading only show up [if taking longer than 1s](https://www.smashingmagazine.com/2016/12/best-practices-for-animated-progress-indicators/)

@@ -16,6 +16,17 @@
     </p>
   </section>
   <section>
+    <h2>Privacy</h2>
+    <p>
+      This website does not collect any personal information other than your
+      email address in order to send you class availability alerts.
+    </p>
+    <p>
+      Your email address is stored securely, will never be used for any other
+      purposes, and will never be sold to third-parties.
+    </p>
+  </section>
+  <section>
     <h2>Credits</h2>
     <p>
       The Classes.fyi website and its server are entirely open source and
@@ -23,7 +34,9 @@
     </p>
     <p>
       It is made by
-      <a href="https://migueltenant.com">Miguel Tenant de La Tour</a>.
+      <a href="https://migueltenant.com">Miguel Tenant de La Tour</a>
+      with the help of
+      <a href="https://github.com/madhavarshney">Madhav Varshney</a>.
     </p>
     <p>
       Class data is provided by
