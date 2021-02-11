@@ -33,13 +33,13 @@
       <a href="https://github.com/Pandawan/classesfyi">available on GitHub</a>.
     </p>
     <p>
-      It is made by
+      Made by
       <a href="https://migueltenant.com">Miguel Tenant de La Tour</a>
       with the help of
       <a href="https://github.com/madhavarshney">Madhav Varshney</a>.
     </p>
     <p>
-      Class data is provided by
+      Class data provided by
       <a href="https://github.com/OpenCourseAPI/OpenCourseAPI">OpenCourseAPI</a
       >.
     </p>
