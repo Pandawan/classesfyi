@@ -6,9 +6,11 @@
           {{ classData.department }}{{ classData.course }} ({{ classData.CRN }})
         </h2>
         <div class="tags">
-          <Tag v-if="isOpeningUp" color="yellow">
-            {{ classData.seats }} seat is opening up
-          </Tag>
+          <Tag v-if="isOpeningUp" color="yellow">{{
+            classData.seats > 1
+              ? `${classData.seats} seats are opening up`
+              : `${classData.seats} seat is opening up`
+          }}</Tag>
           <Tag
             v-else
             :color="statusColors[classData['status']]"
@@ -34,7 +36,10 @@
     </div>
     <div>Duration: {{ classData.start }} - {{ classData.end }}</div>
     <div>Units: {{ classData.units }}</div>
-    <div>Schedule: <ClassSchedule :schedule="classData.times" /></div>
+    <div>
+      Schedule:
+      <ClassSchedule :schedule="classData.times" />
+    </div>
   </div>
 </template>
 
