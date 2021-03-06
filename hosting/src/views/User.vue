@@ -34,11 +34,13 @@
       <p v-else-if="status === 'error' && error !== null" class="error">
         <span v-if="classInfo !== null">
           <!-- TODO: This dual CRN thing is ugly -->
-          Error loading
+          Could not load class data for
           {{
-            `${classInfo.campus.toUpperCase()} ${classInfo.department.toUpperCase()}${classInfo.course.toUpperCase()} ${
-              classInfo.CRN ?? classInfo.crn
-            }: `
+            `${classInfo.campus.toUpperCase()} ${classInfo.term} ${
+              classInfo.year
+            } ${classInfo.department?.toUpperCase() ?? ""}${
+              classInfo.course?.toUpperCase() ?? ""
+            } with CRN: ${classInfo.CRN ?? classInfo.crn}: `
           }}
         </span>
         <span>{{ error }}</span>
@@ -71,6 +73,7 @@ import fire from "/@/utilities/fire";
 const searchFilter = ({ status, error, data: classInfo }, query) => {
   // Run a basic query on short class info
   let shouldAppear =
+    error !== null ||
     `${classInfo.department} ${classInfo.course} ${classInfo.department}${classInfo.course} ${classInfo.CRN}`
       .toLowerCase()
       .indexOf(query.toLowerCase()) != -1;
@@ -144,14 +147,19 @@ export default defineComponent({
       const tasks = Object.entries(classesDataByCampus).map(
         async ([campus, shortClassesInfo]) => {
           const classesResults = await Promise.all(
-            shortClassesInfo.map((shortClassInfo) =>
-              getClassInfo(
-                campus as CampusId,
-                shortClassInfo.crn,
-                shortClassInfo.year,
-                shortClassInfo.term
-              )
-            )
+            shortClassesInfo.map(async (shortClassInfo) => {
+              try {
+                const classInfo = await getClassInfo(
+                  campus as CampusId,
+                  shortClassInfo.crn,
+                  shortClassInfo.year,
+                  shortClassInfo.term
+                );
+                return classInfo;
+              } catch (error) {
+                return [error, null];
+              }
+            })
           );
 
           return {
