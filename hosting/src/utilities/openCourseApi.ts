@@ -187,6 +187,8 @@ export interface ClassInfo {
   seats: number;
   /** Number of waitlist seats open */
   wait_seats: number;
+  /** Number of total waitlist seats */
+  wait_cap: number;
   /** Status of the class */
   status: ClassStatus;
   /** Schedule for the class */

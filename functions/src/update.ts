@@ -93,13 +93,14 @@ async function sendEmailWithChanges(
   const formattedClassesWithChanges = classesWithChanges.map((
     classWithChanges,
   ) => {
-    const { changes } = classWithChanges;
+    const { changes, wait_cap } = classWithChanges;
     // Special case if seat > 0 & class open (implies that waitlist is 0 b/c it wouldn't be closed otherwise)
     // This means a waitlist seat is about to open up
     // TODO: Need a way to know if waitlist is truly 0 (perhaps changes can keep track of "important" vs "unimportant"?)
     if (
       changes.seats !== undefined &&
       changes.seats.updated > 0 &&
+      wait_cap !== 0 &&
       changes.status !== undefined &&
       changes.status.updated === "open"
     ) {
@@ -182,6 +183,7 @@ async function sendEmailWithChanges(
 export interface ClassDataWithChanges extends ClassData {
   department: string;
   course: string;
+  wait_cap: number;
   changes: ClassDataChanges;
 }
 
@@ -283,6 +285,7 @@ async function getClassesWithImportantChanges() {
           department: updatedClassData.dept,
           course: updatedClassData.course,
           changes: importantChanges,
+          wait_cap: updatedClassData.wait_cap,
         };
         // If there were important changes, add them to the complete list for all classes
         classesChanges.push(classDataWithChanges);
@@ -417,6 +420,7 @@ interface OpenCourseClassData {
   end: string;
   seats: number;
   wait_seats: number;
+  wait_cap: number;
   status: string;
   times: {
     days: string;

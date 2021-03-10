@@ -71,6 +71,7 @@ export default {
       () =>
         props.classData.seats > 0 &&
         props.classData.wait_seats === 0 &&
+        props.classData.wait_cap !== 0 &&
         props.classData.status === "open"
     );
 
