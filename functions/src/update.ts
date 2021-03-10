@@ -19,7 +19,7 @@ export const test = functions.https.onRequest(async (req, res) => {
  * This is a pubsub scheduled job, which is automatically handled by Firebase 
  * and is run every 15 minutes based on the given schedule.
  */
-export const updateClassesData = functions.pubsub.schedule("every 15 minutes")
+export const updateClassesData = functions.pubsub.schedule("every 10 minutes")
   .onRun(
     async (context) => {
       // Update firestore data and get a list of all classes that have important changes
