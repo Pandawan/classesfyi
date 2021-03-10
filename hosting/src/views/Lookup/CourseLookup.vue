@@ -140,8 +140,6 @@ export default defineComponent({
           term
         );
 
-        console.log(userStore.state.registeredClasses);
-
         const classesWithMetadata = crs.map((classInfo) => ({
           ...classInfo,
           // Is already registered IF

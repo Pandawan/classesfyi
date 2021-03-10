@@ -53,7 +53,6 @@ async function formatTextEmail(data: EmailData): Promise<string> {
 export async function sendEmail(
   data: EmailData,
 ): Promise<{ type: "success" } | { type: "error"; error: string }> {
-  console.log(JSON.stringify(data));
   const htmlContent = await formatHtmlEmail(data);
   const textContent = await formatTextEmail(data);
 

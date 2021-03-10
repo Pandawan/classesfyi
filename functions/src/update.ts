@@ -70,9 +70,9 @@ export const updateClassesData = functions.pubsub.schedule("every 10 minutes")
 
       functions.logger.log(
         "Attempted to email users on their registered classes",
-        usersToBeUpdated,
+        JSON.stringify(usersToBeUpdated),
         "\nEmail Reports: ",
-        emailSendingReports,
+        JSON.stringify(emailSendingReports),
       );
     },
   );
