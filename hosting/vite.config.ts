@@ -9,7 +9,9 @@ export default {
       "/api": "http://localhost:5000/",
     },
   },
-  alias: {
-    "/@": path.resolve(__dirname, "src"),
+  resolve: {
+    alias: {
+      "/@": path.resolve(__dirname, "src"),
+    },
   },
 };

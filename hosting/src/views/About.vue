@@ -48,7 +48,8 @@
     <h2>Need Help?</h2>
     <p>
       Contact us at
-      <a href="mailto:help@classes.fyi">help@classes.fyi</a>.
+      <a href="mailto:help@classes.fyi">help@classes.fyi</a> or on Discord
+      <code>@Pandawan#4158</code>
     </p>
   </section>
 </template>
